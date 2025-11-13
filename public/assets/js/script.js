@@ -59,7 +59,7 @@ function renderGallery() {
                 <button onclick="deleteImage(${img.id})">Delete (admin)</button>
             </div>
         </div>`).join("");
-}
+} 
 
 // ---------------- MEMBERS SECTION ----------------
 function loadMembers() {
@@ -240,6 +240,7 @@ function initForms() {
         });
     }
 }
+
 
 // ---------------- DELETE HANDLERS ----------------
 window.deleteInfo = function (id) {

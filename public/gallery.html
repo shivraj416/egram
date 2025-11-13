@@ -25,10 +25,19 @@
         </div>
     </header>
 
+    <!-- LIGHTBOX -->
+    <div class="lightbox" id="lightbox">
+        <span class="close-btn" id="closeLightbox">×</span>
+        <img id="lightboxImg" src="">
+    </div>
+
     <main class="container">
         <h1>Gallery</h1>
         <p>Images uploaded by admin appear below.</p>
-        <div id="gallery" class="gallery-grid"></div>
+        <div class="gallery-scroll-box">
+            <div id="gallery" class="gallery-grid"></div>
+        </div>
+
     </main>
 
     <footer class="site-footer">
@@ -48,14 +57,21 @@
             galleryEl.innerHTML = '';
             images.forEach(img => {
                 const imgEl = document.createElement('img');
-                imgEl.src = img.url; // img.url should be the path to the image
+                imgEl.src = img.url;
+
+                // CLICK → SHOW BIG IMAGE
+                imgEl.addEventListener('click', () => {
+                    document.getElementById("lightboxImg").src = img.url;
+                    document.getElementById("lightbox").style.display = "flex";
+                });
+
                 imgEl.alt = img.alt || 'Gallery Image';
                 galleryEl.appendChild(imgEl);
             });
         }
 
         // Fetch initial images
-        fetch('/api/gallery') // Create this endpoint in Node.js backend
+        fetch('/api/gallery')
             .then(res => res.json())
             .then(data => renderGallery(data.images))
             .catch(err => console.error(err));
@@ -63,11 +79,23 @@
         // Listen for new uploads
         socket.on('new-data', (data) => {
             console.log('Gallery updated:', data);
-            // Re-fetch images when admin uploads new ones
             fetch('/api/gallery')
                 .then(res => res.json())
                 .then(data => renderGallery(data.images))
                 .catch(err => console.error(err));
+        });
+
+        /* -------------------------------
+            LIGHTBOX CLOSE BUTTON
+        --------------------------------*/
+        document.getElementById("closeLightbox").addEventListener('click', () => {
+            document.getElementById("lightbox").style.display = "none";
+        });
+
+        document.getElementById("lightbox").addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                document.getElementById("lightbox").style.display = "none";
+            }
         });
     </script>
 
