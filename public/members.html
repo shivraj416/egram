@@ -27,14 +27,19 @@
 
     <main class="container">
         <h1>Panchayat Members</h1>
-        <div id="memberList" class="cards">
-            <!-- Members will appear here dynamically -->
+
+        <!-- SCROLL BOX ADDED -->
+        <div class="member-scroll-box">
+            <div id="memberList" class="cards">
+                <!-- Members will appear here dynamically -->
+            </div>
         </div>
+
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <small>© Gram Panchayat</small>
+            <small>✅ © ग्रामपंचायत हरळ</small>
         </div>
     </footer>
 
@@ -53,7 +58,7 @@
             }
             members.forEach(member => {
                 const card = document.createElement('div');
-                card.className = 'card';
+                card.className = 'card member-card';
                 card.innerHTML = `<h3>${member.name}</h3><p>${member.role || ''} - ${member.contact || ''}</p>`;
                 memberListEl.appendChild(card);
             });
@@ -64,13 +69,13 @@
             try {
                 const res = await fetch('/api/members');
                 const data = await res.json();
-                renderMembers(data.members); // <-- using same logic as index.html
+                renderMembers(data.members);
             } catch (err) {
                 console.error("Error fetching members:", err);
             }
         }
 
-        // Listen for live updates
+        // Live updates
         socket.on('new-data', () => {
             fetchMembers();
         });

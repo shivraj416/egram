@@ -29,14 +29,19 @@
         <h1>Schemes & Programs</h1>
         <p>Active government and Gram Panchayat schemes.</p>
 
-        <div id="schemeList" class="cards">
-            <!-- Schemes will be added here dynamically -->
+        <!-- ▼ ADDED SCROLL BOX ▼ -->
+        <div class="scheme-scroll-box">
+            <div id="schemeList" class="cards">
+                <!-- Schemes will be added here dynamically -->
+            </div>
         </div>
+        <!-- ▲ END SCROLL BOX ▲ -->
+
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <small>© Gram Panchayat</small>
+            <small>✅ © ग्रामपंचायत हरळ</small>
         </div>
     </footer>
 
@@ -51,21 +56,20 @@
             schemeListEl.innerHTML = '';
             schemes.forEach(scheme => {
                 const card = document.createElement('div');
-                card.className = 'card';
+                card.className = 'card scheme-card';  // added fixed card size
                 card.innerHTML = `<h3>${scheme.title}</h3><p>${scheme.description}</p>`;
                 schemeListEl.appendChild(card);
             });
         }
 
         // Fetch initial schemes
-        fetch('/api/schemes') // Create this endpoint in Node.js backend
+        fetch('/api/schemes')
             .then(res => res.json())
             .then(data => renderSchemes(data.schemes))
             .catch(err => console.error(err));
 
         // Listen for updates from admin
         socket.on('new-data', (data) => {
-            console.log('Schemes updated:', data);
             fetch('/api/schemes')
                 .then(res => res.json())
                 .then(data => renderSchemes(data.schemes))

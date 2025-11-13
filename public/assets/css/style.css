@@ -103,13 +103,13 @@ body {
 .gallery-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;                  /* फोटोमधील अंतर कमी */
+    gap: 12px;                  
     justify-content: flex-start;
 }
 
 .gallery-grid img {
-    width: 110px;              /* ID फोटो width */
-    height: 150px;             /* ID फोटो height */
+    width: 110px;              /* ID width */
+    height: 150px;             /* ID  height */
     object-fit: cover;
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -191,6 +191,38 @@ button {
 
 button:hover {
     opacity: 0.95;
+}
+
+/* MEMBER LIST SCROLL BOX */
+.member-scroll-box {
+    max-height: 500px;       /* vertical scroll height */
+    overflow-y: auto;        /* vertical scrollbar */
+    padding-right: 5px;
+}
+
+/* PERFECT MEMBER CARD SIZE */
+.member-card {
+    min-width: 220px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* SCHEMES PAGE SCROLL BOX */
+.scheme-scroll-box {
+    max-height: 500px;       /* vertical scroll height */
+    overflow-y: auto;        /* vertical scrolling */
+    padding-right: 5px;
+}
+
+/* PERFECT FIXED CARD SIZE FOR SCHEMES */
+.scheme-card {
+    min-width: 220px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* Footer */
