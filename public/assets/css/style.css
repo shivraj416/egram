@@ -291,6 +291,24 @@ button:hover {
 .badge-general { background: #0275d8; color: white; }
 
 
+.member-card {
+    padding: 15px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.member-card h3.member-name {
+    margin-bottom: 8px;
+    font-size: 20px;
+    color: #1a73e8;
+}
+
+.member-card p {
+    margin: 4px 0;
+    font-size: 15px;
+}
+
 
 /* Footer */
 .site-footer {

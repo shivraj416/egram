@@ -11,7 +11,7 @@
 <body>
     <header class="site-header">
         <div class="container">
-            <a class="brand" href="index.html">Gram Panchayat</a>
+            <a class="brand" href="index.html">ग्रामपंचायत हरळ</a>
             <button id="navToggle5" class="nav-toggle">☰</button>
             <nav id="mainNav5" class="nav">
                 <a href="index.html">Home</a>
@@ -26,10 +26,13 @@
     </header>
 
     <main class="container">
-        <h1>Schemes & Programs</h1>
-        <p>Active government and Gram Panchayat schemes.</p>
+        <h1>✅ "शासकीय योजना आणि कार्यक्रम"</h1>
+        <p>"सक्रिय शासन व ग्रामपंचायत योजना"</p>
 
-        <!-- ▼ ADDED SCROLL BOX ▼ -->
+        <!-- 🔍 SEARCH BAR -->
+        <input type="text" id="schemeSearch" class="search-box" placeholder="योजना शोधा...">
+
+        <!-- ▼ SCROLL BOX ▼ -->
         <div class="scheme-scroll-box">
             <div id="schemeList" class="cards">
                 <!-- Schemes will be added here dynamically -->
@@ -50,14 +53,20 @@
     <script>
         const socket = io();
         const schemeListEl = document.getElementById('schemeList');
+        const schemeSearch = document.getElementById('schemeSearch');
+
+        let allSchemes = [];
 
         // Function to render schemes
         function renderSchemes(schemes) {
             schemeListEl.innerHTML = '';
             schemes.forEach(scheme => {
                 const card = document.createElement('div');
-                card.className = 'card scheme-card';  // added fixed card size
-                card.innerHTML = `<h3>${scheme.title}</h3><p>${scheme.description}</p>`;
+                card.className = 'card scheme-card';
+                card.innerHTML = `
+                    <h3>${scheme.title}</h3>
+                    <p>${scheme.description}</p>
+                `;
                 schemeListEl.appendChild(card);
             });
         }
@@ -65,15 +74,33 @@
         // Fetch initial schemes
         fetch('/api/schemes')
             .then(res => res.json())
-            .then(data => renderSchemes(data.schemes))
+            .then(data => {
+                allSchemes = data.schemes;
+                renderSchemes(allSchemes);
+            })
             .catch(err => console.error(err));
 
-        // Listen for updates from admin
-        socket.on('new-data', (data) => {
+        // LIVE updates from dashboard
+        socket.on('new-data', () => {
             fetch('/api/schemes')
                 .then(res => res.json())
-                .then(data => renderSchemes(data.schemes))
+                .then(data => {
+                    allSchemes = data.schemes;
+                    renderSchemes(allSchemes);
+                })
                 .catch(err => console.error(err));
+        });
+
+        // 🔍 SEARCH FEATURE
+        schemeSearch.addEventListener("keyup", () => {
+            const query = schemeSearch.value.toLowerCase();
+
+            const filtered = allSchemes.filter(s =>
+                s.title.toLowerCase().includes(query) ||
+                s.description.toLowerCase().includes(query)
+            );
+
+            renderSchemes(filtered);
         });
     </script>
 

@@ -1,17 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Members - Gram Panchayat</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 
 <body>
     <header class="site-header">
         <div class="container">
-            <a class="brand" href="index.html">Gram Panchayat</a>
+            <a class="brand" href="index.html">ग्रामपंचायत हरळ</a>
             <button id="navToggle3" class="nav-toggle">☰</button>
             <nav id="mainNav3" class="nav">
                 <a href="index.html">Home</a>
@@ -26,15 +26,15 @@
     </header>
 
     <main class="container">
-        <h1>Panchayat Members</h1>
+        <h1>ग्रामपंचायत सदस्य</h1>
 
-        <!-- SCROLL BOX ADDED -->
+        <!-- 🔍 SEARCH BAR ADDED -->
+        <input type="text" id="memberSearch" class="search-box" placeholder="सदस्य शोधा..." />
+
+        <!-- SCROLL BOX -->
         <div class="member-scroll-box">
-            <div id="memberList" class="cards">
-                <!-- Members will appear here dynamically -->
-            </div>
+            <div id="memberList" class="cards"></div>
         </div>
-
     </main>
 
     <footer class="site-footer">
@@ -47,40 +47,60 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const memberListEl = document.getElementById('memberList');
+        const memberListEl = document.getElementById("memberList");
+        const searchInput = document.getElementById("memberSearch");
 
-        // Function to render members
+        let allMembers = [];
+
+        // Render members
         function renderMembers(members) {
-            memberListEl.innerHTML = '';
+            memberListEl.innerHTML = "";
             if (!Array.isArray(members) || members.length === 0) {
-                memberListEl.innerHTML = '<p>No members yet</p>';
+                memberListEl.innerHTML = "<p>सदस्यांची नोंद उपलब्ध नाही</p>";
                 return;
             }
-            members.forEach(member => {
-                const card = document.createElement('div');
-                card.className = 'card member-card';
-                card.innerHTML = `<h3>${member.name}</h3><p>${member.role || ''} - ${member.contact || ''}</p>`;
+
+            members.forEach((member) => {
+                const card = document.createElement("div");
+                card.className = "card member-card";
+                card.innerHTML = `
+                    <h3 class="member-name">👤 ${member.name}</h3>
+                    <p><strong>भूमिका:</strong> ${member.role || "—"}</p>
+                    <p><strong>संपर्क:</strong> ${member.contact || "—"}</p>
+                `;
+
                 memberListEl.appendChild(card);
             });
         }
 
-        // Fetch members from API
+        // Fetch members
         async function fetchMembers() {
             try {
-                const res = await fetch('/api/members');
+                const res = await fetch("/api/members");
                 const data = await res.json();
-                renderMembers(data.members);
+                allMembers = data.members;
+                renderMembers(allMembers);
             } catch (err) {
                 console.error("Error fetching members:", err);
             }
         }
 
-        // Live updates
-        socket.on('new-data', () => {
-            fetchMembers();
+        // 🔍 LIVE SEARCH FILTER
+        searchInput.addEventListener("keyup", () => {
+            const q = searchInput.value.toLowerCase();
+            const filtered = allMembers.filter(
+                (m) =>
+                    m.name.toLowerCase().includes(q) ||
+                    (m.role || "").toLowerCase().includes(q) ||
+                    (m.contact || "").toLowerCase().includes(q)
+            );
+            renderMembers(filtered);
         });
 
-        // Initial fetch
+        // Live updates
+        socket.on("new-data", fetchMembers);
+
+        // Initial load
         fetchMembers();
     </script>
 
