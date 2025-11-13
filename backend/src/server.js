@@ -5,40 +5,59 @@ const http = require("http");
 const { Server } = require("socket.io");
 const multer = require("multer");
 const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
 
-// Render uses dynamic port
+// SOCKET.IO with CORS (Netlify + Render)
+const io = new Server(server, {
+    cors: {
+        origin: "*",   // in production replace "*" with your Netlify URL
+    },
+});
+
+// Port for Render
 const port = process.env.PORT || 8000;
 
-// --------------------------------------
-// FIX FOR RENDER: use process.cwd()
-// --------------------------------------
-const ROOT_DIR = process.cwd();
-
+// ----------------------------------------------------------
+// CORRECT ROOT DIRECTORY FOR BOTH LOCAL + RENDER
+// ----------------------------------------------------------
+// backend/src/server.js -> backend -> project-root
+// So we go 2 levels up from __dirname
+const ROOT_DIR = path.join(__dirname, "..", "..");
 const PUBLIC_PATH = path.join(ROOT_DIR, "public");
 const DATA_FILE = path.join(ROOT_DIR, "data.json");
 
-// Middleware
-app.use(express.static(PUBLIC_PATH));
-app.use(express.json());
+console.log("ROOT_DIR:", ROOT_DIR);
+console.log("PUBLIC_PATH:", PUBLIC_PATH);
+console.log("DATA_FILE:", DATA_FILE);
 
-// Pages
+// ----------------------------------------------------------
+// MIDDLEWARE
+// ----------------------------------------------------------
+app.use(cors());                   // enable CORS for Netlify frontend
+app.use(express.json());
+app.use(express.static(PUBLIC_PATH));
+
+// ----------------------------------------------------------
+// ROUTE FOR STATIC PAGES
+// ----------------------------------------------------------
 const pages = ["index", "about", "contact", "dashboard", "gallery", "members", "schemes"];
+
 pages.forEach((page) => {
     app.get(`/${page === "index" ? "" : page}`, (req, res) => {
         res.sendFile(path.join(PUBLIC_PATH, `${page}.html`));
     });
 });
 
-// ----------------------
-// Data Storage
-// ----------------------
+// ----------------------------------------------------------
+// DATA FUNCTIONS
+// ----------------------------------------------------------
 function loadData() {
-    if (!fs.existsSync(DATA_FILE))
+    if (!fs.existsSync(DATA_FILE)) {
         return { info: [], members: [], schemes: [], images: [] };
+    }
     return JSON.parse(fs.readFileSync(DATA_FILE));
 }
 
@@ -46,15 +65,18 @@ function saveData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// ----------------------
-// Info Routes
-// ----------------------
-app.get("/api/info", (req, res) => res.json({ info: loadData().info }));
+// ----------------------------------------------------------
+// INFO ROUTES
+// ----------------------------------------------------------
+app.get("/api/info", (req, res) => {
+    res.json({ info: loadData().info });
+});
 
 app.post("/admin/upload", (req, res) => {
     const { title, description } = req.body;
-    if (!title || !description)
+    if (!title || !description) {
         return res.status(400).json({ status: "error", message: "Missing title/description" });
+    }
 
     const data = loadData();
     const newInfo = { id: Date.now(), title, description };
@@ -74,15 +96,18 @@ app.delete("/admin/delete/info/:id", (req, res) => {
     res.json({ status: "success" });
 });
 
-// ----------------------
-// Members Routes
-// ----------------------
-app.get("/api/members", (req, res) => res.json({ members: loadData().members }));
+// ----------------------------------------------------------
+// MEMBERS ROUTES
+// ----------------------------------------------------------
+app.get("/api/members", (req, res) => {
+    res.json({ members: loadData().members });
+});
 
 app.post("/admin/members", (req, res) => {
     const { name, role, contact } = req.body;
-    if (!name || !role || !contact)
+    if (!name || !role || !contact) {
         return res.status(400).json({ status: "error", message: "Missing fields" });
+    }
 
     const data = loadData();
     const newMember = { id: Date.now(), name, role, contact };
@@ -102,15 +127,18 @@ app.delete("/admin/delete/member/:id", (req, res) => {
     res.json({ status: "success" });
 });
 
-// ----------------------
-// Schemes Routes
-// ----------------------
-app.get("/api/schemes", (req, res) => res.json({ schemes: loadData().schemes }));
+// ----------------------------------------------------------
+// SCHEMES ROUTES
+// ----------------------------------------------------------
+app.get("/api/schemes", (req, res) => {
+    res.json({ schemes: loadData().schemes });
+});
 
 app.post("/admin/schemes", (req, res) => {
     const { title, description, start, end } = req.body;
-    if (!title || !description || !start || !end)
+    if (!title || !description || !start || !end) {
         return res.status(400).json({ status: "error", message: "Missing fields" });
+    }
 
     const data = loadData();
     const newScheme = { id: Date.now(), title, description, start, end };
@@ -130,16 +158,19 @@ app.delete("/admin/delete/scheme/:id", (req, res) => {
     res.json({ status: "success" });
 });
 
-// ----------------------
-// Gallery Routes
-// ----------------------
+// ----------------------------------------------------------
+// GALLERY ROUTES
+// ----------------------------------------------------------
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.get("/api/gallery", (req, res) => res.json({ images: loadData().images }));
+app.get("/api/gallery", (req, res) => {
+    res.json({ images: loadData().images });
+});
 
 app.post("/admin/gallery", upload.single("image"), (req, res) => {
-    if (!req.file)
+    if (!req.file) {
         return res.status(400).json({ status: "error", message: "No file uploaded" });
+    }
 
     const data = loadData();
     const newImg = {
@@ -164,17 +195,17 @@ app.delete("/admin/delete/image/:id", (req, res) => {
     res.json({ status: "success" });
 });
 
-// ----------------------
-// Socket.io
-// ----------------------
+// ----------------------------------------------------------
+// SOCKET.IO EVENTS
+// ----------------------------------------------------------
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
     socket.on("disconnect", () => console.log("User disconnected:", socket.id));
 });
 
-// ----------------------
-// Start Server
-// ----------------------
+// ----------------------------------------------------------
+// START SERVER
+// ----------------------------------------------------------
 server.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
