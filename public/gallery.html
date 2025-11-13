@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Gallery - Gram Panchayat</title>
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        /* 🔥 Small orange dot */
+        .new-dot {
+            width: 10px;
+            height: 10px;
+            background: orange;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 4px;
+        }
+    </style>
 </head>
 
 <body>
@@ -17,7 +29,10 @@
                 <a href="index.html">Home</a>
                 <a href="about.html">About</a>
                 <a href="members.html">Members</a>
-                <a href="gallery.html" class="active">Gallery</a>
+                <a href="gallery.html" class="active">
+                    Gallery
+                    <span id="dotGallery" class="new-dot" style="display:none;"></span>
+                </a>
                 <a href="schemes.html">Schemes</a>
                 <a href="contact.html">Contact</a>
                 <a href="dashboard.html" class="cta">Dashboard</a>
@@ -51,6 +66,31 @@
     <script>
         const socket = io();
         const galleryEl = document.getElementById('gallery');
+        const dotGallery = document.getElementById('dotGallery');
+
+        /* ------------------------------------------------
+           🔥 IF NEW IMAGE ADDED → SHOW DOT
+        --------------------------------------------------*/
+        socket.on("new-data", (data) => {
+            if (data.type === "gallery") {
+                localStorage.setItem("newGallery", "yes");
+                showGalleryDot();
+            }
+        });
+
+        function showGalleryDot() {
+            if (localStorage.getItem("newGallery") === "yes") {
+                dotGallery.style.display = "inline-block";
+            }
+        }
+
+        /* ------------------------------------------------
+           🔥 USER OPENED GALLERY → REMOVE DOT
+        --------------------------------------------------*/
+        window.addEventListener("load", () => {
+            localStorage.setItem("newGallery", "no");
+            dotGallery.style.display = "none";
+        });
 
         // Function to render images
         function renderGallery(images) {
@@ -75,15 +115,6 @@
             .then(res => res.json())
             .then(data => renderGallery(data.images))
             .catch(err => console.error(err));
-
-        // Listen for new uploads
-        socket.on('new-data', (data) => {
-            console.log('Gallery updated:', data);
-            fetch('/api/gallery')
-                .then(res => res.json())
-                .then(data => renderGallery(data.images))
-                .catch(err => console.error(err));
-        });
 
         /* -------------------------------
             LIGHTBOX CLOSE BUTTON

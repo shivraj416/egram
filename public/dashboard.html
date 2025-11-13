@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Dashboard - Admin</title>
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        .new-dot {
+            width: 10px;
+            height: 10px;
+            background: orange;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+        }
+    </style>
 </head>
 
 <body>
@@ -14,11 +25,21 @@
             <a class="brand" href="index.html">ग्रामपंचायत हरळ</a>
             <button class="nav-toggle">☰</button>
             <nav class="nav">
-                <a href="index.html">Home</a>
-                <a href="about.html">About</a>
-                <a href="members.html">Members</a>
-                <a href="gallery.html">Gallery</a>
-                <a href="schemes.html">Schemes</a>
+                <a href="index.html">
+                    Home <span id="dotHome" class="new-dot" style="display:none;"></span>
+                </a>
+                <a href="about.html">
+                    About <span id="dotAbout" class="new-dot" style="display:none;"></span>
+                </a>
+                <a href="members.html">
+                    Members <span id="dotMembers" class="new-dot" style="display:none;"></span>
+                </a>
+                <a href="gallery.html">
+                    Gallery <span id="dotGallery" class="new-dot" style="display:none;"></span>
+                </a>
+                <a href="schemes.html">
+                    Schemes <span id="dotSchemes" class="new-dot" style="display:none;"></span>
+                </a>
                 <a href="contact.html">Contact</a>
                 <a href="dashboard.html" class="active cta">Dashboard</a>
             </nav>
@@ -111,20 +132,57 @@
         const socket = io();
         const ADMIN_PASSWORD = "shiva";
 
-        // ---------------- FETCH AND RENDER ----------------
+        /* ------------------------------------------------
+           🔥 SHOW DOTS BASED ON LOCALSTORAGE
+        --------------------------------------------------*/
+        function showDots() {
+            if (localStorage.getItem("newInfo") === "yes")
+                document.getElementById("dotHome").style.display = "inline-block";
+
+            if (localStorage.getItem("newMembers") === "yes")
+                document.getElementById("dotMembers").style.display = "inline-block";
+
+            if (localStorage.getItem("newGallery") === "yes")
+                document.getElementById("dotGallery").style.display = "inline-block";
+
+            if (localStorage.getItem("newSchemes") === "yes")
+                document.getElementById("dotSchemes").style.display = "inline-block";
+        }
+
+        showDots();
+
+        /* ------------------------------------------------
+           🔥 WHEN ADMIN ADDS NEW DATA → SET FLAGS
+        --------------------------------------------------*/
+        socket.on("new-data", (data) => {
+            if (data.type === "info") localStorage.setItem("newInfo", "yes");
+            if (data.type === "members") localStorage.setItem("newMembers", "yes");
+            if (data.type === "gallery") localStorage.setItem("newGallery", "yes");
+            if (data.type === "schemes") localStorage.setItem("newSchemes", "yes");
+
+            showDots();
+        });
+
+        /* ------------------------------------------------
+           🔥 WHEN USER OPENS DASHBOARD → MARK AS SEEN
+        --------------------------------------------------*/
+        window.addEventListener("load", () => {
+            localStorage.setItem("newInfo", "no");
+            localStorage.setItem("newMembers", "no");
+            localStorage.setItem("newGallery", "no");
+            localStorage.setItem("newSchemes", "no");
+        });
+
+        /* ---------------- ORIGINAL CODE BELOW (UNCHANGED) ---------------- */
+
         async function fetchData() {
             try {
-                // Notices
                 const infoRes = await fetch('/api/info');
                 const infos = await infoRes.json();
-
-                // ⭐ SORT NEWEST FIRST
                 infos.info.sort((a, b) => b.id - a.id);
 
                 document.getElementById('adminInfoList').innerHTML = infos.info.length
                     ? infos.info.map(i => {
-
-                        // ⭐ BADGE COLOR
                         let badgeClass = "badge-general";
                         if (i.type === "Important") badgeClass = "badge-important";
                         if (i.type === "Urgent") badgeClass = "badge-urgent";
@@ -139,7 +197,6 @@
                     }).join('')
                     : '<p>No notices yet</p>';
 
-                // Members
                 const memRes = await fetch('/api/members');
                 const mems = await memRes.json();
                 document.getElementById('adminMembers').innerHTML = mems.members.length
@@ -151,7 +208,6 @@
                         </div>`).join('')
                     : '<p>No members yet</p>';
 
-                // Schemes
                 const schRes = await fetch('/api/schemes');
                 const schs = await schRes.json();
                 document.getElementById('adminSchemes').innerHTML = schs.schemes.length
@@ -164,7 +220,6 @@
                         </div>`).join('')
                     : '<p>No schemes yet</p>';
 
-                // Gallery
                 const galRes = await fetch('/api/gallery');
                 const gal = await galRes.json();
                 document.getElementById('adminGallery').innerHTML = gal.images.length
@@ -179,7 +234,6 @@
             }
         }
 
-        // ---------------- DELETE ----------------
         async function deleteInfo(id) {
             if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
             await fetch(`/admin/delete/info/${id}`, { method: 'DELETE' });
@@ -204,7 +258,6 @@
             fetchData();
         }
 
-        // ---------------- FORMS ----------------
         document.getElementById('infoForm').addEventListener('submit', async e => {
             e.preventDefault();
 
@@ -217,8 +270,6 @@
                 body: JSON.stringify({
                     title: document.getElementById('infoTitle').value.trim(),
                     description: document.getElementById('infoDesc').value.trim(),
-
-                    // ⭐ SEND TYPE
                     type: document.querySelector("#infoType option:checked").value
                 })
             });
@@ -274,10 +325,8 @@
             fetchData();
         });
 
-        // ---------------- SOCKET.IO LIVE UPDATES ----------------
         socket.on('new-data', fetchData);
 
-        // ---------------- INIT ----------------
         document.addEventListener("DOMContentLoaded", fetchData);
     </script>
 </body>

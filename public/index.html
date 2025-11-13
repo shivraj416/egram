@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Gram Panchayat - Home</title>
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        .new-dot {
+            width: 10px;
+            height: 10px;
+            background: orange;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 4px;
+        }
+    </style>
 </head>
 
 <body>
@@ -15,7 +26,10 @@
             <a class="brand" href="index.html">ग्रामपंचायत हरळ</a>
             <button id="navToggle" class="nav-toggle">☰</button>
             <nav id="mainNav" class="nav">
-                <a href="index.html" class="active">Home</a>
+                <a href="index.html" class="active">
+                    Home
+                    <span id="dotHome" class="new-dot" style="display:none;"></span>
+                </a>
                 <a href="about.html">About</a>
                 <a href="members.html">Members</a>
                 <a href="gallery.html">Gallery</a>
@@ -33,12 +47,27 @@
             <p>“पारदर्शकता आणि निष्ठेने जनसेवेसाठी आम्ही वचनबद्ध आहोत.”</p>
         </section>
 
-        <!-- map -->
         <section class="map container">
+
+            <!-- ⭐ LOCATION LABEL ADDED -->
+            <h3 style="
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    ">
+                📍 हरळ (राजापूर, महाराष्ट्र)
+            </h3>
+
             <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.0865028744317!2d77.2090213153166!3d28.613939482382582!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd5b1b00b7a1%3A0x0!2zMjjCsDM2JzEyLjAiTiA3N8KwMTInMDkuOCJF!5e0!3m2!1sen!2sin!4v1600000000000!5m2!1sen!2sin"
-                width="100%" height="420" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15379.051886766696!2d73.5179571!3d16.6390669!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcfa9271d6ae1f1%3A0x8b7e7a98e3c6d1e!2sHaral%2C%20Maharashtra%20416113!5e0!3m2!1sen!2sin!4v1731573140000!5m2!1sen!2sin"
+                width="100%" height="420" style="border:0;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
         </section>
+
 
         <!-- dynamic info uploaded by admin -->
         <section class="info-list container">
@@ -64,52 +93,72 @@
     </footer>
 
     <!-- Socket.io -->
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    const socket = io();
-    const infoContainer = document.getElementById('infoItems');
-    const searchInput = document.getElementById('noticeSearch');
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const infoContainer = document.getElementById('infoItems');
+        const searchInput = document.getElementById('noticeSearch');
+        const dotHome = document.getElementById('dotHome');
 
-    let allNotices = [];
+        let allNotices = [];
 
-    function renderInfo(items) {
-        infoContainer.innerHTML = '';
-        if (!Array.isArray(items)) return;
+        /* ------------------------------------------------
+           🔥 SHOW DOT IF NEW NOTICE EXISTS
+        --------------------------------------------------*/
+        function showHomeDot() {
+            if (localStorage.getItem("newInfo") === "yes") {
+                dotHome.style.display = "inline-block";
+            }
+        }
+        showHomeDot();
 
-        items.forEach(item => {
+        /* ------------------------------------------------
+           🔥 WHEN ADMIN ADDS NEW NOTICE → SET DOT FLAG
+        --------------------------------------------------*/
+        socket.on("new-data", (data) => {
+            if (data.type === "info") {
+                localStorage.setItem("newInfo", "yes");
+                showHomeDot();
+            }
+        });
 
-            // ⭐ CORRECT TYPE FIX
-            const noticeType = item.type || "General";
+        /* ------------------------------------------------
+           🔥 WHEN USER OPENS HOME PAGE → REMOVE DOT
+        --------------------------------------------------*/
+        window.addEventListener("load", () => {
+            localStorage.setItem("newInfo", "no");
+            dotHome.style.display = "none";
+        });
 
-            let tagClass = "tag-general";
-            if (noticeType === "Important") tagClass = "tag-important";
-            if (noticeType === "Urgent") tagClass = "tag-urgent";
 
-            const card = document.createElement('div');
-            card.className = 'card info-card';
-            card.innerHTML = `
+        /* ------------------------------------------------
+           🔥 EXISTING NOTICE CODE (UNCHANGED)
+        -------------------------------------------------- */
+
+        function renderInfo(items) {
+            infoContainer.innerHTML = '';
+            if (!Array.isArray(items)) return;
+
+            items.forEach(item => {
+                const noticeType = item.type || "General";
+
+                let tagClass = "tag-general";
+                if (noticeType === "Important") tagClass = "tag-important";
+                if (noticeType === "Urgent") tagClass = "tag-urgent";
+
+                const card = document.createElement('div');
+                card.className = 'card info-card';
+                card.innerHTML = `
                 <span class="notice-tag ${tagClass}">
                     ${noticeType}
                 </span>
                 <h3>${item.title}</h3>
-                
-                <!-- FIXED DESCRIPTION -->
                 <p>${item.description || item.desc || ""}</p>
             `;
-            infoContainer.appendChild(card);
-        });
-    }
+                infoContainer.appendChild(card);
+            });
+        }
 
-    fetch('/api/info')
-        .then(res => res.json())
-        .then(data => {
-            data.info.sort((a, b) => b.id - a.id);
-            allNotices = data.info;
-            renderInfo(allNotices);
-        })
-        .catch(err => console.error(err));
-
-    socket.on('new-data', () => {
         fetch('/api/info')
             .then(res => res.json())
             .then(data => {
@@ -118,18 +167,31 @@
                 renderInfo(allNotices);
             })
             .catch(err => console.error(err));
-    });
 
-    // ⭐ FIXED SEARCH — no error, works for all types
-    searchInput.addEventListener("keyup", () => {
-        const q = searchInput.value.toLowerCase();
+        socket.on('new-data', () => {
+            fetch('/api/info')
+                .then(res => res.json())
+                .then(data => {
+                    data.info.sort((a, b) => b.id - a.id);
+                    allNotices = data.info;
+                    renderInfo(allNotices);
+                })
+                .catch(err => console.error(err));
+        });
 
-        const filtered = allNotices.filter(n =>
-            n.title.toLowerCase().includes(q) ||
-            (n.description || n.desc || "").toLowerCase().includes(q) ||
-            (n.type || "General").toLowerCase().includes(q)
-        );
+        searchInput.addEventListener("keyup", () => {
+            const q = searchInput.value.toLowerCase();
 
-        renderInfo(filtered);
-    });
-</script>
+            const filtered = allNotices.filter(n =>
+                n.title.toLowerCase().includes(q) ||
+                (n.description || n.desc || "").toLowerCase().includes(q) ||
+                (n.type || "General").toLowerCase().includes(q)
+            );
+
+            renderInfo(filtered);
+        });
+    </script>
+
+</body>
+
+</html>
