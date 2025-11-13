@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gallery - Gram Panchayat</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">Gram Panchayat</a>
+            <button id="navToggle4" class="nav-toggle">☰</button>
+            <nav id="mainNav4" class="nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="members.html">Members</a>
+                <a href="gallery.html" class="active">Gallery</a>
+                <a href="schemes.html">Schemes</a>
+                <a href="contact.html">Contact</a>
+                <a href="dashboard.html" class="cta">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Gallery</h1>
+        <p>Images uploaded by admin appear below.</p>
+        <div id="gallery" class="gallery-grid"></div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Gram Panchayat</small>
+        </div>
+    </footer>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const galleryEl = document.getElementById('gallery');
+
+        // Function to render images
+        function renderGallery(images) {
+            galleryEl.innerHTML = '';
+            images.forEach(img => {
+                const imgEl = document.createElement('img');
+                imgEl.src = img.url; // img.url should be the path to the image
+                imgEl.alt = img.alt || 'Gallery Image';
+                galleryEl.appendChild(imgEl);
+            });
+        }
+
+        // Fetch initial images
+        fetch('/api/gallery') // Create this endpoint in Node.js backend
+            .then(res => res.json())
+            .then(data => renderGallery(data.images))
+            .catch(err => console.error(err));
+
+        // Listen for new uploads
+        socket.on('new-data', (data) => {
+            console.log('Gallery updated:', data);
+            // Re-fetch images when admin uploads new ones
+            fetch('/api/gallery')
+                .then(res => res.json())
+                .then(data => renderGallery(data.images))
+                .catch(err => console.error(err));
+        });
+    </script>
+
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

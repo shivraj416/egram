@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gram Panchayat - Home</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <!-- header / nav -->
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">Gram Panchayat</a>
+            <button id="navToggle" class="nav-toggle">☰</button>
+            <nav id="mainNav" class="nav">
+                <a href="index.html" class="active">Home</a>
+                <a href="about.html">About</a>
+                <a href="members.html">Members</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="schemes.html">Schemes</a>
+                <a href="contact.html">Contact</a>
+                <a href="dashboard.html" class="cta">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- hero -->
+    <main>
+        <section class="hero container">
+            <h1>Welcome to Our Gram Panchayat</h1>
+            <p>Serving the community with transparency and dedication.</p>
+        </section>
+
+        <!-- map -->
+        <section class="map container">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.0865028744317!2d77.2090213153166!3d28.613939482382582!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd5b1b00b7a1%3A0x0!2zMjjCsDM2JzEyLjAiTiA3N8KwMTInMDkuOCJF!5e0!3m2!1sen!2sin!4v1600000000000!5m2!1sen!2sin"
+                width="100%" height="420" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </section>
+
+        <!-- dynamic info uploaded by admin -->
+        <section class="info-list container">
+            <h2>Notices & Info</h2>
+            <div id="infoItems" class="cards">
+                <!-- Dynamic info will appear here -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Gram Panchayat • Built with ❤️</small>
+        </div>
+    </footer>
+
+    <!-- Socket.io -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const infoContainer = document.getElementById('infoItems');
+
+    // Function to render notices/info
+    function renderInfo(items) {
+        infoContainer.innerHTML = '';
+        // Check if items is array
+        if (!Array.isArray(items)) return;
+
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
+            infoContainer.appendChild(card);
+        });
+    }
+
+    // Fetch initial info on page load
+    fetch('/api/info')
+        .then(res => res.json())
+        .then(data => renderInfo(data.info)) // <-- changed from data.items to data.info
+        .catch(err => console.error(err));
+
+    // Listen for new updates from admin
+    socket.on('new-data', (data) => {
+        console.log('New info received:', data);
+        // Re-fetch latest notices/info
+        fetch('/api/info')
+            .then(res => res.json())
+            .then(data => renderInfo(data.info)) // <-- changed here too
+            .catch(err => console.error(err));
+    });
+</script>

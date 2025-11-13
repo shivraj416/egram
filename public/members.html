@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Members - Gram Panchayat</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">Gram Panchayat</a>
+            <button id="navToggle3" class="nav-toggle">☰</button>
+            <nav id="mainNav3" class="nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="members.html" class="active">Members</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="schemes.html">Schemes</a>
+                <a href="contact.html">Contact</a>
+                <a href="dashboard.html" class="cta">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Panchayat Members</h1>
+        <div id="memberList" class="cards">
+            <!-- Members will appear here dynamically -->
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Gram Panchayat</small>
+        </div>
+    </footer>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const memberListEl = document.getElementById('memberList');
+
+        // Function to render members
+        function renderMembers(members) {
+            memberListEl.innerHTML = '';
+            if (!Array.isArray(members) || members.length === 0) {
+                memberListEl.innerHTML = '<p>No members yet</p>';
+                return;
+            }
+            members.forEach(member => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<h3>${member.name}</h3><p>${member.role || ''} - ${member.contact || ''}</p>`;
+                memberListEl.appendChild(card);
+            });
+        }
+
+        // Fetch members from API
+        async function fetchMembers() {
+            try {
+                const res = await fetch('/api/members');
+                const data = await res.json();
+                renderMembers(data.members); // <-- using same logic as index.html
+            } catch (err) {
+                console.error("Error fetching members:", err);
+            }
+        }
+
+        // Listen for live updates
+        socket.on('new-data', () => {
+            fetchMembers();
+        });
+
+        // Initial fetch
+        fetchMembers();
+    </script>
+
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

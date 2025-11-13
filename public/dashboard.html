@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dashboard - Admin</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">Gram Panchayat</a>
+            <button class="nav-toggle">☰</button>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="members.html">Members</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="schemes.html">Schemes</a>
+                <a href="contact.html">Contact</a>
+                <a href="dashboard.html" class="active cta">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container admin">
+        <h1>Admin Dashboard</h1>
+
+        <!-- Add Notice -->
+        <section class="card">
+            <h2>Add Notice / Info</h2>
+            <form id="infoForm">
+                <input id="infoTitle" placeholder="Title" required>
+                <textarea id="infoDesc" placeholder="Description" required></textarea>
+                <input id="infoPassword" type="password" placeholder="Admin Password" required>
+                <button type="submit">Add Info</button>
+            </form>
+        </section>
+
+        <!-- Add Member -->
+        <section class="card">
+            <h2>Add Member</h2>
+            <form id="memberForm">
+                <input id="memberName" placeholder="Name" required>
+                <input id="memberRole" placeholder="Role" required>
+                <input id="memberContact" placeholder="Contact" required>
+                <input id="memberPassword" type="password" placeholder="Admin Password" required>
+                <button type="submit">Add Member</button>
+            </form>
+        </section>
+
+        <!-- Add Scheme -->
+        <section class="card">
+            <h2>Add Scheme</h2>
+            <form id="schemeForm">
+                <input id="schemeTitle" placeholder="Title" required>
+                <textarea id="schemeDesc" placeholder="Description" required></textarea>
+                <label>Start:</label><input id="schemeStart" type="date" required>
+                <label>End:</label><input id="schemeEnd" type="date" required>
+                <input id="schemePassword" type="password" placeholder="Admin Password" required>
+                <button type="submit">Add Scheme</button>
+            </form>
+        </section>
+
+        <!-- Upload Image -->
+        <section class="card">
+            <h2>Upload Image</h2>
+            <form id="imageForm">
+                <input id="imageFile" type="file" accept="image/*" required>
+                <input id="imagePassword" type="password" placeholder="Admin Password" required>
+                <button type="submit">Upload</button>
+            </form>
+        </section>
+
+        <!-- Existing Data -->
+        <h2>Existing Notices</h2>
+        <div id="adminInfoList" class="cards"></div>
+
+        <h2>Existing Members</h2>
+        <div id="adminMembers" class="cards">Loading members...</div>
+
+        <h2>Existing Schemes</h2>
+        <div id="adminSchemes" class="cards"></div>
+
+        <h2>Existing Images</h2>
+        <div id="adminGallery" class="gallery-grid"></div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container"><small>© Gram Panchayat</small></div>
+    </footer>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const ADMIN_PASSWORD = "shiva";
+
+        // ---------------- FETCH AND RENDER ----------------
+        async function fetchData() {
+            try {
+                // Notices
+                const infoRes = await fetch('/api/info');
+                const infos = await infoRes.json();
+                document.getElementById('adminInfoList').innerHTML = infos.info.length
+                    ? infos.info.map(i =>
+                        `<div class="card">
+                            <h3>${i.title}</h3>
+                            <p>${i.description}</p>
+                            <button onclick="deleteInfo(${i.id})">Delete</button>
+                        </div>`).join('')
+                    : '<p>No notices yet</p>';
+
+                // Members
+                const memRes = await fetch('/api/members');
+                const mems = await memRes.json();
+                document.getElementById('adminMembers').innerHTML = mems.members.length
+                    ? mems.members.map(m =>
+                        `<div class="card">
+                            <h3>${m.name}</h3>
+                            <p>${m.role} - ${m.contact}</p>
+                            <button onclick="deleteMember(${m.id})">Delete</button>
+                        </div>`).join('')
+                    : '<p>No members yet</p>';
+
+                // Schemes
+                const schRes = await fetch('/api/schemes');
+                const schs = await schRes.json();
+                document.getElementById('adminSchemes').innerHTML = schs.schemes.length
+                    ? schs.schemes.map(s =>
+                        `<div class="card">
+                            <h3>${s.title}</h3>
+                            <p>${s.description}</p>
+                            <p>${s.start} → ${s.end}</p>
+                            <button onclick="deleteScheme(${s.id})">Delete</button>
+                        </div>`).join('')
+                    : '<p>No schemes yet</p>';
+
+                // Gallery
+                const galRes = await fetch('/api/gallery');
+                const gal = await galRes.json();
+                document.getElementById('adminGallery').innerHTML = gal.images.length
+                    ? gal.images.map(img =>
+                        `<div>
+                            <img src="${img.url}" alt="${img.alt}" />
+                            <button onclick="deleteImage(${img.id})">Delete</button>
+                        </div>`).join('')
+                    : '<p>No images yet</p>';
+            } catch (e) {
+                console.error("Error fetching data:", e);
+            }
+        }
+
+        // ---------------- DELETE ----------------
+        async function deleteInfo(id) {
+            if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
+            await fetch(`/admin/delete/info/${id}`, { method: 'DELETE' });
+            fetchData();
+        }
+
+        async function deleteMember(id) {
+            if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
+            await fetch(`/admin/delete/member/${id}`, { method: 'DELETE' });
+            fetchData();
+        }
+
+        async function deleteScheme(id) {
+            if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
+            await fetch(`/admin/delete/scheme/${id}`, { method: 'DELETE' });
+            fetchData();
+        }
+
+        async function deleteImage(id) {
+            if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
+            await fetch(`/admin/delete/image/${id}`, { method: 'DELETE' });
+            fetchData();
+        }
+
+        // ---------------- FORMS ----------------
+        document.getElementById('infoForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            if (document.getElementById('infoPassword').value !== ADMIN_PASSWORD) return alert("Incorrect password");
+            await fetch('/admin/upload', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: document.getElementById('infoTitle').value.trim(),
+                    description: document.getElementById('infoDesc').value.trim()
+                })
+            });
+            e.target.reset();
+            fetchData();
+        });
+
+        document.getElementById('memberForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            if (document.getElementById('memberPassword').value !== ADMIN_PASSWORD) return alert("Incorrect password");
+            await fetch('/admin/members', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: document.getElementById('memberName').value.trim(),
+                    role: document.getElementById('memberRole').value.trim(),
+                    contact: document.getElementById('memberContact').value.trim()
+                })
+            });
+            e.target.reset();
+            fetchData();
+        });
+
+        document.getElementById('schemeForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            if (document.getElementById('schemePassword').value !== ADMIN_PASSWORD) return alert("Incorrect password");
+            await fetch('/admin/schemes', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: document.getElementById('schemeTitle').value.trim(),
+                    description: document.getElementById('schemeDesc').value.trim(),
+                    start: document.getElementById('schemeStart').value,
+                    end: document.getElementById('schemeEnd').value
+                })
+            });
+            e.target.reset();
+            fetchData();
+        });
+
+        document.getElementById('imageForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            if (document.getElementById('imagePassword').value !== ADMIN_PASSWORD) return alert("Incorrect password");
+            const file = document.getElementById('imageFile').files[0];
+            if (!file) return alert("Select an image");
+            const fd = new FormData();
+            fd.append('image', file);
+            await fetch('/admin/gallery', { method: 'POST', body: fd });
+            e.target.reset();
+            fetchData();
+        });
+
+        // ---------------- SOCKET.IO LIVE UPDATES ----------------
+        socket.on('new-data', fetchData);
+
+        // ---------------- INIT ----------------
+        document.addEventListener("DOMContentLoaded", fetchData);
+    </script>
+</body>
+</html>

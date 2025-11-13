@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>About - Gram Panchayat</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">Gram Panchayat</a>
+            <button id="navToggle2" class="nav-toggle">☰</button>
+            <nav id="mainNav2" class="nav">
+                <a href="index.html">Home</a>
+                <a href="about.html" class="active">About</a>
+                <a href="members.html">Members</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="schemes.html">Schemes</a>
+                <a href="contact.html">Contact</a>
+                <a href="dashboard.html" class="cta">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>About Our Gram Panchayat</h1>
+        <p id="aboutContent">Put the about text here: mission, vision, history, contact details etc.</p>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Gram Panchayat</small>
+        </div>
+    </footer>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Listen for updates from the server
+        socket.on('new-data', (data) => {
+            console.log('New data received:', data);
+            // Fetch the latest about content from server
+            fetch('/api/about') // You need to create this endpoint in your Node.js backend
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('aboutContent').textContent = data.content;
+                })
+                .catch(err => console.error(err));
+        });
+    </script>
+
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

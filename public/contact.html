@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Contact - Gram Panchayat</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">Gram Panchayat</a>
+            <button id="navToggle6" class="nav-toggle">☰</button>
+            <nav id="mainNav6" class="nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="members.html">Members</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="schemes.html">Schemes</a>
+                <a href="contact.html" class="active">Contact</a>
+                <a href="dashboard.html" class="cta">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Contact Us</h1>
+        <p id="contactInfo">Address, phone, email, office hours.</p>
+
+        <form id="contactForm">
+            <label>Name
+                <input type="text" name="name" required>
+            </label>
+            <label>Email
+                <input type="email" name="email" required>
+            </label>
+            <label>Message
+                <textarea name="message" required></textarea>
+            </label>
+            <button type="submit">Send</button>
+        </form>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Gram Panchayat</small>
+        </div>
+    </footer>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Listen for updates from the server (e.g., office info updated by admin)
+        socket.on('new-data', (data) => {
+            console.log('New contact data received:', data);
+            // Fetch latest contact info from server
+            fetch('/api/contact') // You need to create this endpoint in your Node.js backend
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('contactInfo').textContent = data.content;
+                })
+                .catch(err => console.error(err));
+        });
+
+        // Contact form handler
+        document.getElementById('contactForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('Thank you! This demo site does not send messages — connect a backend to make it live.');
+            this.reset();
+        });
+    </script>
+
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

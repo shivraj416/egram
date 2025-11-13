@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Schemes - Gram Panchayat</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="index.html">Gram Panchayat</a>
+            <button id="navToggle5" class="nav-toggle">☰</button>
+            <nav id="mainNav5" class="nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="members.html">Members</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="schemes.html" class="active">Schemes</a>
+                <a href="contact.html">Contact</a>
+                <a href="dashboard.html" class="cta">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Schemes & Programs</h1>
+        <p>Active government and Gram Panchayat schemes.</p>
+
+        <div id="schemeList" class="cards">
+            <!-- Schemes will be added here dynamically -->
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Gram Panchayat</small>
+        </div>
+    </footer>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const schemeListEl = document.getElementById('schemeList');
+
+        // Function to render schemes
+        function renderSchemes(schemes) {
+            schemeListEl.innerHTML = '';
+            schemes.forEach(scheme => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<h3>${scheme.title}</h3><p>${scheme.description}</p>`;
+                schemeListEl.appendChild(card);
+            });
+        }
+
+        // Fetch initial schemes
+        fetch('/api/schemes') // Create this endpoint in Node.js backend
+            .then(res => res.json())
+            .then(data => renderSchemes(data.schemes))
+            .catch(err => console.error(err));
+
+        // Listen for updates from admin
+        socket.on('new-data', (data) => {
+            console.log('Schemes updated:', data);
+            fetch('/api/schemes')
+                .then(res => res.json())
+                .then(data => renderSchemes(data.schemes))
+                .catch(err => console.error(err));
+        });
+    </script>
+
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>
