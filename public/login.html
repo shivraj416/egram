@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Admin Login</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Glassmorphism Box */
+        .login-box {
+            width: 350px;
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            color: white;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        /* Smooth Fade Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(25px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-box h2 {
+            font-size: 26px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .login-box p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        /* Input field */
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 20px 0;
+            border: none;
+            border-radius: 10px;
+            outline: none;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        /* Button */
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            background: #ffcc00;
+            font-weight: 600;
+            transition: 0.25s ease;
+        }
+
+        .login-box button:hover {
+            background: #ffd633;
+            transform: scale(1.03);
+        }
+
+        .error {
+            margin-top: 10px;
+            color: #ffdddd;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* Admin badge */
+        .admin-badge {
+            background: #ffd700;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-block;
+            margin-bottom: 10px;
+            color: #222;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-box">
+        <div class="admin-badge">ADMIN ACCESS ONLY</div>
+        <h2>Welcome Admin</h2>
+        <p>कृपया लॉगिन करण्यासाठी पासवर्ड टाका</p>
+
+        <input type="password" id="adminPass" placeholder="Enter Admin Password">
+
+        <button onclick="loginAdmin()">Login</button>
+
+        <p id="errorMsg" class="error">Incorrect Password!</p>
+    </div>
+
+    <script>
+        const CORRECT_PASSWORD = "admin123";
+
+        function loginAdmin() {
+            const pass = document.getElementById("adminPass").value;
+            const errorBox = document.getElementById("errorMsg");
+
+            if (pass === CORRECT_PASSWORD) {
+                localStorage.setItem("isAdminLoggedIn", "true");
+                window.location.href = "dashboard.html";
+            } else {
+                errorBox.style.display = "block";
+                errorBox.textContent = "❌ चुकीचा पासवर्ड!";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
