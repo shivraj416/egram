@@ -225,6 +225,73 @@ button:hover {
     justify-content: center;
 }
 
+/* NOTICE LIST SCROLL BOX */
+.info-scroll-box {
+    max-height: 400px;       /* scrolling height */
+    overflow-y: auto;        /* vertical scroll bar */
+    padding-right: 5px;
+}
+
+/* Perfect fixed card size for notices */
+.info-card {
+    min-width: 220px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* SEARCH BOX */
+.search-box {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* NOTICE BADGES */
+.notice-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.tag-important {
+    background: #d9534f;  /* red */
+    color: white;
+}
+
+.tag-urgent {
+    background: #f0ad4e;  /* yellow */
+    color: black;
+}
+
+.tag-general {
+    background: #0275d8;  /* blue */
+    color: white;
+}
+
+/* ADMIN BADGES */
+.admin-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.badge-important { background: #d9534f; color: white; }
+.badge-urgent { background: #f0ad4e; color: black; }
+.badge-general { background: #0275d8; color: white; }
+
+
+
 /* Footer */
 .site-footer {
     padding: 20px 0;

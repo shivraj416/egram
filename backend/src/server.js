@@ -13,7 +13,7 @@ const server = http.createServer(app);
 // SOCKET.IO with CORS (Netlify + Render)
 const io = new Server(server, {
     cors: {
-        origin: "*",   // in production replace "*" with your Netlify URL
+        origin: "*",
     },
 });
 
@@ -21,27 +21,25 @@ const io = new Server(server, {
 const port = process.env.PORT || 8000;
 
 // ----------------------------------------------------------
-// CORRECT ROOT DIRECTORY FOR BOTH LOCAL + RENDER
+// CORRECT ROOT DIRECTORY
 // ----------------------------------------------------------
-// backend/src/server.js -> backend -> project-root
-// So we go 2 levels up from __dirname
 const ROOT_DIR = path.join(__dirname, "..", "..");
 const PUBLIC_PATH = path.join(ROOT_DIR, "public");
 const DATA_FILE = path.join(ROOT_DIR, "data.json");
 
-console.log("ROOT_DIR:", ROOT_DIR);
-console.log("PUBLIC_PATH:", PUBLIC_PATH);
-console.log("DATA_FILE:", DATA_FILE);
-
 // ----------------------------------------------------------
-// MIDDLEWARE
+// MIDDLEWARE  (⭐ FIX ADDED BELOW)
 // ----------------------------------------------------------
-app.use(cors());                   // enable CORS for Netlify frontend
+app.use(cors());
 app.use(express.json());
+
+// ⭐⭐ FIX ADDED → THIS MAKES req.body.type WORK ⭐⭐
+app.use(express.urlencoded({ extended: true }));
+
 app.use(express.static(PUBLIC_PATH));
 
 // ----------------------------------------------------------
-// ROUTE FOR STATIC PAGES
+// STATIC PAGE ROUTES
 // ----------------------------------------------------------
 const pages = ["index", "about", "contact", "dashboard", "gallery", "members", "schemes"];
 
@@ -66,20 +64,29 @@ function saveData(data) {
 }
 
 // ----------------------------------------------------------
-// INFO ROUTES
+// INFO ROUTES (WITH TYPE SUPPORT)
 // ----------------------------------------------------------
 app.get("/api/info", (req, res) => {
     res.json({ info: loadData().info });
 });
 
 app.post("/admin/upload", (req, res) => {
-    const { title, description } = req.body;
+
+    const { title, description, type } = req.body;
+
     if (!title || !description) {
         return res.status(400).json({ status: "error", message: "Missing title/description" });
     }
 
     const data = loadData();
-    const newInfo = { id: Date.now(), title, description };
+
+    const newInfo = {
+        id: Date.now(),
+        title,
+        description,
+        type: type || "General"
+    };
+
     data.info.push(newInfo);
     saveData(data);
 

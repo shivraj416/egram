@@ -32,8 +32,20 @@
         <section class="card">
             <h2>Add Notice / Info</h2>
             <form id="infoForm">
+
                 <input id="infoTitle" placeholder="Title" required>
+
                 <textarea id="infoDesc" placeholder="Description" required></textarea>
+
+                <!-- ⭐ ADDED DROPDOWN HERE -->
+                <label>Notice Type:</label>
+                <select id="infoType">
+                    <option value="General">General</option>
+                    <option value="Important">Important</option>
+                    <option value="Urgent">Urgent</option>
+                </select>
+                <!-- ⭐ END DROPDOWN -->
+
                 <input id="infoPassword" type="password" placeholder="Admin Password" required>
                 <button type="submit">Add Info</button>
             </form>
@@ -57,8 +69,10 @@
             <form id="schemeForm">
                 <input id="schemeTitle" placeholder="Title" required>
                 <textarea id="schemeDesc" placeholder="Description" required></textarea>
+
                 <label>Start:</label><input id="schemeStart" type="date" required>
                 <label>End:</label><input id="schemeEnd" type="date" required>
+
                 <input id="schemePassword" type="password" placeholder="Admin Password" required>
                 <button type="submit">Add Scheme</button>
             </form>
@@ -89,7 +103,7 @@
     </main>
 
     <footer class="site-footer">
-        <div class="container"><small>© Gram Panchayat</small></div>
+        <div class="container"><small>✅ © ग्रामपंचायत हरळ</small></div>
     </footer>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -103,13 +117,26 @@
                 // Notices
                 const infoRes = await fetch('/api/info');
                 const infos = await infoRes.json();
+
+                // ⭐ SORT NEWEST FIRST
+                infos.info.sort((a, b) => b.id - a.id);
+
                 document.getElementById('adminInfoList').innerHTML = infos.info.length
-                    ? infos.info.map(i =>
-                        `<div class="card">
-                            <h3>${i.title}</h3>
-                            <p>${i.description}</p>
-                            <button onclick="deleteInfo(${i.id})">Delete</button>
-                        </div>`).join('')
+                    ? infos.info.map(i => {
+
+                        // ⭐ BADGE COLOR
+                        let badgeClass = "badge-general";
+                        if (i.type === "Important") badgeClass = "badge-important";
+                        if (i.type === "Urgent") badgeClass = "badge-urgent";
+
+                        return `
+        <div class="card">
+            <span class="admin-badge ${badgeClass}">${i.type || "General"}</span>
+            <h3>${i.title}</h3>
+            <p>${i.description || i.desc}</p>
+            <button onclick="deleteInfo(${i.id})">Delete</button>
+        </div>`;
+                    }).join('')
                     : '<p>No notices yet</p>';
 
                 // Members
@@ -180,15 +207,22 @@
         // ---------------- FORMS ----------------
         document.getElementById('infoForm').addEventListener('submit', async e => {
             e.preventDefault();
-            if (document.getElementById('infoPassword').value !== ADMIN_PASSWORD) return alert("Incorrect password");
+
+            if (document.getElementById('infoPassword').value !== ADMIN_PASSWORD)
+                return alert("Incorrect password");
+
             await fetch('/admin/upload', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     title: document.getElementById('infoTitle').value.trim(),
-                    description: document.getElementById('infoDesc').value.trim()
+                    description: document.getElementById('infoDesc').value.trim(),
+
+                    // ⭐ SEND TYPE
+                    type: document.querySelector("#infoType option:checked").value
                 })
             });
+
             e.target.reset();
             fetchData();
         });
@@ -231,8 +265,10 @@
             if (document.getElementById('imagePassword').value !== ADMIN_PASSWORD) return alert("Incorrect password");
             const file = document.getElementById('imageFile').files[0];
             if (!file) return alert("Select an image");
+
             const fd = new FormData();
             fd.append('image', file);
+
             await fetch('/admin/gallery', { method: 'POST', body: fd });
             e.target.reset();
             fetchData();
@@ -245,4 +281,5 @@
         document.addEventListener("DOMContentLoaded", fetchData);
     </script>
 </body>
+
 </html>

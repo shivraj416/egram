@@ -43,8 +43,15 @@
         <!-- dynamic info uploaded by admin -->
         <section class="info-list container">
             <h2>Notices & Info</h2>
-            <div id="infoItems" class="cards">
-                <!-- Dynamic info will appear here -->
+
+            <!-- 🔍 SEARCH BAR -->
+            <input type="text" id="noticeSearch" class="search-box" placeholder="Search notices...">
+
+            <!-- ▼ SCROLL BOX ▼ -->
+            <div class="info-scroll-box">
+                <div id="infoItems" class="cards">
+                    <!-- Dynamic info will appear here -->
+                </div>
             </div>
         </section>
 
@@ -52,7 +59,7 @@
 
     <footer class="site-footer">
         <div class="container">
-            <small>© Gram Panchayat Haral • Built with ❤️</small>
+            <small>© हरळ ग्रामपंचायत • समर्पित सेवेसह निर्मित ❤️</small>
         </div>
     </footer>
 
@@ -61,34 +68,68 @@
 <script>
     const socket = io();
     const infoContainer = document.getElementById('infoItems');
+    const searchInput = document.getElementById('noticeSearch');
 
-    // Function to render notices/info
+    let allNotices = [];
+
     function renderInfo(items) {
         infoContainer.innerHTML = '';
-        // Check if items is array
         if (!Array.isArray(items)) return;
 
         items.forEach(item => {
+
+            // ⭐ CORRECT TYPE FIX
+            const noticeType = item.type || "General";
+
+            let tagClass = "tag-general";
+            if (noticeType === "Important") tagClass = "tag-important";
+            if (noticeType === "Urgent") tagClass = "tag-urgent";
+
             const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
+            card.className = 'card info-card';
+            card.innerHTML = `
+                <span class="notice-tag ${tagClass}">
+                    ${noticeType}
+                </span>
+                <h3>${item.title}</h3>
+                
+                <!-- FIXED DESCRIPTION -->
+                <p>${item.description || item.desc || ""}</p>
+            `;
             infoContainer.appendChild(card);
         });
     }
 
-    // Fetch initial info on page load
     fetch('/api/info')
         .then(res => res.json())
-        .then(data => renderInfo(data.info)) // <-- changed from data.items to data.info
+        .then(data => {
+            data.info.sort((a, b) => b.id - a.id);
+            allNotices = data.info;
+            renderInfo(allNotices);
+        })
         .catch(err => console.error(err));
 
-    // Listen for new updates from admin
-    socket.on('new-data', (data) => {
-        console.log('New info received:', data);
-        // Re-fetch latest notices/info
+    socket.on('new-data', () => {
         fetch('/api/info')
             .then(res => res.json())
-            .then(data => renderInfo(data.info)) // <-- changed here too
+            .then(data => {
+                data.info.sort((a, b) => b.id - a.id);
+                allNotices = data.info;
+                renderInfo(allNotices);
+            })
             .catch(err => console.error(err));
+    });
+
+    // ⭐ FIXED SEARCH — no error, works for all types
+    searchInput.addEventListener("keyup", () => {
+        const q = searchInput.value.toLowerCase();
+
+        const filtered = allNotices.filter(n =>
+            n.title.toLowerCase().includes(q) ||
+            (n.description || n.desc || "").toLowerCase().includes(q) ||
+            (n.type || "General").toLowerCase().includes(q)
+        );
+
+        renderInfo(filtered);
     });
 </script>
