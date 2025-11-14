@@ -241,7 +241,7 @@ app.post("/api/send-message", (req, res) => {
 });
 
 // ----------------------------------------------------------
-// SEND EMAIL TO USER
+// SEND EMAIL TO USER (BREVO SMTP FIXED FOR RENDER)
 // ----------------------------------------------------------
 const nodemailer = require("nodemailer");
 
@@ -253,13 +253,15 @@ app.post("/admin/send-email", async (req, res) => {
     }
 
     try {
+        // ⭐ FIX: Brevo SMTP (Works 100% on Render)
         let transporter = nodemailer.createTransport({
-            service: "gmail",
+            host: "smtp-relay.brevo.com",
+            port: 587,
+            secure: false,
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
+                user: "apikey",
+                pass: process.env.BREVO_API_KEY
             }
-
         });
 
         const finalMessage = `
@@ -274,7 +276,7 @@ ${message}
         `;
 
         await transporter.sendMail({
-            from: `"Gram Panchayat Haral" <desaishivraj84@gmail.com>`,
+            from: `"Gram Panchayat Haral" <no-reply@gpharal.in>`,
             to: email,
             subject: "Gram Panchayat Haral – सूचना",
             text: finalMessage,
@@ -287,6 +289,7 @@ ${message}
         res.json({ success: false, error: err.message });
     }
 });
+
 
 // ----------------------------------------------------------
 // SOCKET.IO EVENTS
