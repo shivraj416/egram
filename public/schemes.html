@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="assets/css/style.css">
 
     <style>
-        /* 🔥 Small orange dot */
         .new-dot {
             width: 10px;
             height: 10px;
@@ -31,7 +30,6 @@
                 <a href="members.html">Members</a>
                 <a href="gallery.html">Gallery</a>
 
-                <!-- ⭐ Dot added here -->
                 <a href="schemes.html" class="active">
                     Schemes
                     <span id="dotSchemes" class="new-dot" style="display:none;"></span>
@@ -44,110 +42,97 @@
     </header>
 
     <main class="container">
-        <h1>✅ "शासकीय योजना आणि कार्यक्रम"</h1>
-        <p>"सक्रिय शासन व ग्रामपंचायत योजना"</p>
+        <h1>शासकीय योजना</h1>
 
-        <!-- 🔍 SEARCH BAR -->
-        <input type="text" id="schemeSearch" class="search-box" placeholder="योजना शोधा...">
+        <input type="text" id="schemeSearch" class="search-box" placeholder="योजना शोधा…">
 
-        <!-- ▼ SCROLL BOX ▼ -->
         <div class="scheme-scroll-box">
             <div id="schemeList" class="cards"></div>
         </div>
     </main>
 
     <footer class="site-footer">
-        <div class="container">
-            <small>✅ © ग्रामपंचायत हरळ</small>
-        </div>
+        <div class="container"><small>© ग्रामपंचायत हरळ</small></div>
     </footer>
 
-    <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
+
     <script>
         const socket = io();
-        const schemeListEl = document.getElementById('schemeList');
-        const schemeSearch = document.getElementById('schemeSearch');
-        const dotSchemes = document.getElementById('dotSchemes');
+        const schemeListEl = document.getElementById("schemeList");
+        const schemeSearch = document.getElementById("schemeSearch");
+        const dotSchemes = document.getElementById("dotSchemes");
 
         let allSchemes = [];
 
-        /* ------------------------------------------------
-           🔥 SHOW DOT IF NEW SCHEME ADDED
-        --------------------------------------------------*/
+        /* Show dot if new */
         function showSchemeDot() {
-            if (localStorage.getItem("newScheme") === "yes") {
+            if (localStorage.getItem("newSchemes") === "yes") {
                 dotSchemes.style.display = "inline-block";
             }
         }
         showSchemeDot();
 
-        /* ------------------------------------------------
-           🔥 WHEN ADMIN ADDS NEW SCHEME → SET DOT FLAG
-        --------------------------------------------------*/
+        /* Reload when admin adds new */
         socket.on("new-data", (data) => {
             if (data.type === "schemes") {
-                localStorage.setItem("newScheme", "yes");
+                localStorage.setItem("newSchemes", "yes");
                 showSchemeDot();
+                loadSchemes();
             }
         });
 
-        /* ------------------------------------------------
-           🔥 WHEN USER OPENS SCHEMES PAGE → REMOVE DOT
-        --------------------------------------------------*/
+        /* Clear dot when opened */
         window.addEventListener("load", () => {
-            localStorage.setItem("newScheme", "no");
+            localStorage.setItem("newSchemes", "no");
             dotSchemes.style.display = "none";
         });
 
-        // Function to render schemes
+        /* Render */
         function renderSchemes(schemes) {
-            schemeListEl.innerHTML = '';
-            schemes.forEach(scheme => {
-                const card = document.createElement('div');
-                card.className = 'card scheme-card';
-                card.innerHTML = `
-                    <h3>${scheme.title}</h3>
-                    <p>${scheme.description}</p>
+            schemeListEl.innerHTML = "";
+
+            if (!schemes.length) {
+                schemeListEl.innerHTML = "<p>No schemes available</p>";
+                return;
+            }
+
+            schemes.forEach(s => {
+                schemeListEl.innerHTML += `
+                    <div class="card scheme-card">
+                        <h3>${s.title}</h3>
+                        <p>${s.description}</p>
+                        <p><b>Start:</b> ${s.start}</p>
+                        <p><b>End:</b> ${s.end}</p>
+                    </div>
                 `;
-                schemeListEl.appendChild(card);
             });
         }
 
-        // Fetch initial schemes
-        fetch('/api/schemes')
-            .then(res => res.json())
-            .then(data => {
-                allSchemes = data.schemes;
-                renderSchemes(allSchemes);
-            })
-            .catch(err => console.error(err));
-
-        // Live updates
-        socket.on('new-data', () => {
-            fetch('/api/schemes')
+        /* Fetch API */
+        function loadSchemes() {
+            fetch("/api/schemes")
                 .then(res => res.json())
                 .then(data => {
                     allSchemes = data.schemes;
                     renderSchemes(allSchemes);
                 })
-                .catch(err => console.error(err));
-        });
+                .catch(err => console.error("Scheme load error:", err));
+        }
+        loadSchemes();
 
-        // 🔍 SEARCH FEATURE
+        /* Search */
         schemeSearch.addEventListener("keyup", () => {
-            const query = schemeSearch.value.toLowerCase();
+            const q = schemeSearch.value.toLowerCase();
 
             const filtered = allSchemes.filter(s =>
-                s.title.toLowerCase().includes(query) ||
-                s.description.toLowerCase().includes(query)
+                s.title.toLowerCase().includes(q) ||
+                s.description.toLowerCase().includes(q)
             );
 
             renderSchemes(filtered);
         });
     </script>
 
-    <script src="assets/js/script.js"></script>
 </body>
-
 </html>
