@@ -148,54 +148,77 @@
     </footer>
 
     <!-- REAL-TIME DATA HANDLING -->
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const infoContainer = document.getElementById('infoItems');
-        const searchInput = document.getElementById('noticeSearch');
-        const dotHome = document.getElementById('dotHome');
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const infoContainer = document.getElementById('infoItems');
+    const searchInput = document.getElementById('noticeSearch');
+    const dotHome = document.getElementById('dotHome');
 
-        let allNotices = [];
+    let allNotices = [];
 
-        function showHomeDot() {
-            if (localStorage.getItem("newInfo") === "yes") {
-                dotHome.style.display = "inline-block";
-            }
+    function showHomeDot() {
+        if (localStorage.getItem("newInfo") === "yes") {
+            dotHome.style.display = "inline-block";
         }
-        showHomeDot();
+    }
+    showHomeDot();
 
-        socket.on("new-data", (data) => {
-            if (data.type === "info") {
-                localStorage.setItem("newInfo", "yes");
-                showHomeDot();
-            }
+    socket.on("new-data", (data) => {
+        if (data.type === "info") {
+            localStorage.setItem("newInfo", "yes");
+            showHomeDot();
+        }
+    });
+
+    window.addEventListener("load", () => {
+        localStorage.setItem("newInfo", "no");
+        dotHome.style.display = "none";
+    });
+
+    /* ---------------------------------------------
+       RENDER INFO WITH COLOR BADGES (FIXED)
+    ----------------------------------------------*/
+    function renderInfo(items) {
+        infoContainer.innerHTML = '';
+        if (!Array.isArray(items)) return;
+
+        items.forEach(item => {
+            const noticeType = item.type || "General";
+
+            // ⭐ Color selection
+            let tagClass = "tag-general";     // blue
+            if (noticeType === "Important") tagClass = "tag-important"; // red
+            if (noticeType === "Urgent") tagClass = "tag-urgent";       // orange
+
+            const card = document.createElement('div');
+            card.className = 'card info-card';
+
+            card.innerHTML = `
+                <span class="notice-tag ${tagClass}">${noticeType}</span>
+                <h3>${item.title}</h3>
+                <p>${item.description || item.desc || ""}</p>
+            `;
+
+            infoContainer.appendChild(card);
+        });
+    }
+
+    /* ---------------------------------------------
+       FETCH INITIAL DATA
+    ----------------------------------------------*/
+    fetch('/api/info')
+        .then(res => res.json())
+        .then(data => {
+            data.info.sort((a, b) => b.id - a.id);
+            allNotices = data.info;
+            renderInfo(allNotices);
         });
 
-        window.addEventListener("load", () => {
-            localStorage.setItem("newInfo", "no");
-            dotHome.style.display = "none";
-        });
-
-        function renderInfo(items) {
-            infoContainer.innerHTML = '';
-            if (!Array.isArray(items)) return;
-
-            items.forEach(item => {
-                const noticeType = item.type || "General";
-                let tagClass = "tag-general";
-                if (noticeType === "Important") tagClass = "tag-important";
-                if (noticeType === "Urgent") tagClass = "tag-urgent";
-
-                const card = document.createElement('div');
-                card.className = 'card info-card';
-                card.innerHTML = `
-                    <span class="notice-tag ${tagClass}">${noticeType}</span>
-                    <h3>${item.title}</h3>
-                    <p>${item.description || item.desc || ""}</p>`;
-                infoContainer.appendChild(card);
-            });
-        }
-
+    /* ---------------------------------------------
+       LIVE UPDATE ON SOCKET EVENT
+    ----------------------------------------------*/
+    socket.on('new-data', () => {
         fetch('/api/info')
             .then(res => res.json())
             .then(data => {
@@ -203,28 +226,21 @@
                 allNotices = data.info;
                 renderInfo(allNotices);
             });
+    });
 
-        socket.on('new-data', () => {
-            fetch('/api/info')
-                .then(res => res.json())
-                .then(data => {
-                    data.info.sort((a, b) => b.id - a.id);
-                    allNotices = data.info;
-                    renderInfo(allNotices);
-                });
-        });
-
-        searchInput.addEventListener("keyup", () => {
-            const q = searchInput.value.toLowerCase();
-            const filtered = allNotices.filter(n =>
-                n.title.toLowerCase().includes(q) ||
-                (n.description || n.desc || "").toLowerCase().includes(q) ||
-                (n.type || "General").toLowerCase().includes(q)
-            );
-            renderInfo(filtered);
-        });
-    </script>
+    /* ---------------------------------------------
+       SEARCH FILTER
+    ----------------------------------------------*/
+    searchInput.addEventListener("keyup", () => {
+        const q = searchInput.value.toLowerCase();
+        const filtered = allNotices.filter(n =>
+            n.title.toLowerCase().includes(q) ||
+            (n.description || n.desc || "").toLowerCase().includes(q) ||
+            (n.type || "General").toLowerCase().includes(q)
+        );
+        renderInfo(filtered);
+    });
+</script>
 
 </body>
-
 </html>

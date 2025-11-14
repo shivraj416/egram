@@ -418,37 +418,36 @@
         /* ---------------- ORIGINAL CODE BELOW (UNCHANGED) ---------------- */
 
         async function fetchData() {
-            try {
-                const infoRes = await fetch('/api/info');
-                const infos = await infoRes.json();
-                infos.info.sort((a, b) => b.id - a.id);
+        try {
+            const infoRes = await fetch('/api/info');
+            const infos = await infoRes.json();
+            infos.info.sort((a, b) => b.id - a.id);
 
-                document.getElementById('adminInfoList').innerHTML = infos.info.length ?
-                    infos.info.map(i => {
-                        let badgeClass = "badge-general";
-                        if (i.type === "Important") badgeClass = "badge-important";
-                        if (i.type === "Urgent") badgeClass = "badge-urgent";
+            /* ------------------ FIXED NOTICE RENDER (AUTO COLORS) ------------------ */
+            document.getElementById('adminInfoList').innerHTML = infos.info.length ?
+                infos.info.map(i => {
 
-                        return `
-        <div class="card">
-            <span class="admin-badge ${badgeClass}">${i.type || "General"}</span>
-            <h3>${i.title}</h3>
-            <p>${i.description || i.desc}</p>
-            <button onclick="deleteInfo(${i.id})">Delete</button>
-        </div>`;
-                    }).join('') :
-                    '<p>No notices yet</p>';
+                    // ⭐ Auto color based on type
+                    let badgeClass = "badge-general";   // blue
+                    if (i.type === "Important") badgeClass = "badge-important";  // red
+                    if (i.type === "Urgent") badgeClass = "badge-urgent";        // orange
 
-                const memRes = await fetch('/api/members');
-                const mems = await memRes.json();
-                document.getElementById('adminMembers').innerHTML = mems.members.length ?
-                    mems.members.map(m =>
-                        `<div class="card">
-                            <h3>${m.name}</h3>
-                            <p>${m.role} - ${m.contact}</p>
-                            <button onclick="deleteMember(${m.id})">Delete</button>
-                        </div>`).join('') :
-                    '<p>No members yet</p>';
+                    return `
+                        <div class="card">
+                            <span class="admin-badge ${badgeClass}">
+                                ${i.type || "General"}
+                            </span>
+
+                            <h3>${i.title}</h3>
+                            <p>${i.description || i.desc}</p>
+
+                            <button onclick="deleteInfo(${i.id})">Delete</button>
+                        </div>
+                    `;
+                }).join('')
+                :
+                `<p>No notices yet</p>`;
+
 
                 const schRes = await fetch('/api/schemes');
                 const schs = await schRes.json();

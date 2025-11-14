@@ -203,6 +203,20 @@ button:hover {
     padding-right: 5px;
 }
 
+.notice-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.tag-important { background: #d9534f; color: white; } /* RED */
+.tag-urgent { background: #f0ad4e; color: black; }    /* ORANGE */
+.tag-general { background: #0275d8; color: white; }   /* BLUE */
+
+
 /* FOOTER */
 .site-footer {
     padding: 20px 0;
