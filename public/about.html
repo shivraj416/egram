@@ -8,40 +8,82 @@
     <link rel="stylesheet" href="assets/css/style.css">
 
     <style>
-        /* Extra spacing for About Page */
+        /* 🌄 FULL PAGE BACKGROUND IMAGE */
+        body {
+            margin: 0;
+            padding: 0;
+            background: url("assets/img/bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* 🌑 DARK OVERLAY */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        /* About content card */
         #aboutContent {
             line-height: 1.8;
             font-size: 18px;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.9);
             padding: 25px;
             border-radius: 12px;
             margin-top: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.08);
         }
 
+        /* NORMAL (NO GLOW) About Section Title */
         #aboutContent h2 {
             font-size: 26px;
             margin-bottom: 15px;
-            color: #2a5d2a;
             font-weight: 700;
             border-left: 5px solid #4CAF50;
             padding-left: 10px;
+            color: #2a5d2a;
+            text-shadow: none !important;
+            animation: none !important;
         }
 
+        /* NORMAL (NO GLOW) Subheadings */
         #aboutContent h3 {
             margin-top: 25px;
             font-size: 22px;
             color: #444;
+            text-shadow: none !important;
+            animation: none !important;
         }
 
         #aboutContent p {
             margin: 10px 0 20px 0;
-            color: #333;
+            color: #222;
+        }
+
+        /* ✨ Glow ONLY on Main Heading */
+        h1 {
+            color: #fff;
+            text-shadow: 0 0 10px #ffffff, 0 0 25px #00eaff;
+            animation: glowHeading 2s infinite alternate;
+        }
+
+        /* Keyframes */
+        @keyframes glowHeading {
+            from { text-shadow: 0 0 10px #fff, 0 0 25px #00eaff; }
+            to { text-shadow: 0 0 20px #fff, 0 0 40px #00f6ff; }
         }
     </style>
 </head>
 
 <body>
+
+    <!-- DARK OVERLAY -->
+    <div class="bg-overlay"></div>
+
     <header class="site-header">
         <div class="container">
             <a class="brand" href="index.html">ग्रामपंचायत हरळ</a>
@@ -59,6 +101,7 @@
     </header>
 
     <main class="container">
+        <!-- ✨ ONLY this heading glows -->
         <h1 style="margin-top:20px;">🌿 “आपली ग्रामपंचायत – एक परिचय”</h1>
 
         <div id="aboutContent">
@@ -93,7 +136,7 @@
         </div>
     </footer>
 
-    <!-- Socket.io -->
+    <!-- Socket.io (UNCHANGED) -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -105,11 +148,10 @@
                         document.getElementById('aboutContent').textContent = data.content;
                     }
                 })
-                .catch(() => {});
+                .catch(() => { });
         });
     </script>
 
     <script src="assets/js/script.js"></script>
 </body>
-
 </html>
