@@ -32,10 +32,16 @@
             animation: fadeIn 0.8s ease-in-out;
         }
 
-        /* Smooth Fade Animation */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(25px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .login-box h2 {
@@ -49,7 +55,6 @@
             opacity: 0.9;
         }
 
-        /* Input field */
         .login-box input {
             width: 100%;
             padding: 12px;
@@ -61,7 +66,6 @@
             font-family: inherit;
         }
 
-        /* Button */
         .login-box button {
             width: 100%;
             padding: 12px;
@@ -86,7 +90,6 @@
             display: none;
         }
 
-        /* Admin badge */
         .admin-badge {
             background: #ffd700;
             padding: 5px 12px;
@@ -97,10 +100,36 @@
             color: #222;
             font-weight: 600;
         }
+
+        /* SUCCESS POPUP */
+        .popup {
+            position: fixed;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4cd964;
+            padding: 12px 25px;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            opacity: 0;
+            transition: all .4s ease;
+            z-index: 9999;
+        }
+
+        .popup.show {
+            top: 20px;
+            opacity: 1;
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- SUCCESS POPUP (Correct position) -->
+    <div id="loginSuccessPopup" class="popup">
+        Login Successful! ✔️
+    </div>
 
     <div class="login-box">
         <div class="admin-badge">ADMIN ACCESS ONLY</div>
@@ -117,13 +146,30 @@
     <script>
         const CORRECT_PASSWORD = "admin123";
 
+        // 🔥 POPUP FUNCTION
+        function showLoginSuccessPopup() {
+            const p = document.getElementById("loginSuccessPopup");
+            p.classList.add("show");
+            setTimeout(() => p.classList.remove("show"), 2000);
+        }
+
         function loginAdmin() {
             const pass = document.getElementById("adminPass").value;
             const errorBox = document.getElementById("errorMsg");
 
             if (pass === CORRECT_PASSWORD) {
+
+                // 🔥 Show popup
+                showLoginSuccessPopup();
+
+                // Save login state
                 localStorage.setItem("isAdminLoggedIn", "true");
-                window.location.href = "dashboard.html";
+
+                // Redirect after popup
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1200);
+
             } else {
                 errorBox.style.display = "block";
                 errorBox.textContent = "❌ चुकीचा पासवर्ड!";

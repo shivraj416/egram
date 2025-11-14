@@ -19,6 +19,156 @@
     </style>
 </head>
 
+<!-- SUCCESS POPUP -->
+<div id="successPopup" class="popup">
+    Member Added Successfully! 🎉
+</div>
+
+<!-- DELETE POPUP -->
+<div id="deletePopup" class="popup" style="background:#dc3545;">
+    Member Deleted Successfully! 🗑️
+</div>
+
+<style>
+    .popup {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #28a745;
+        color: #fff;
+        padding: 14px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+        z-index: 9999;
+    }
+
+    .popup.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+
+<!-- NOTICE ADD POPUP -->
+<div id="noticeAddPopup" class="popup">
+    Notice Added Successfully! 📝
+</div>
+
+<!-- NOTICE DELETE POPUP -->
+<div id="noticeDeletePopup" class="popup delete">
+    Notice Deleted Successfully! 🗑️
+</div>
+
+<style>
+    .popup {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #28a745;
+        color: #fff;
+        padding: 14px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+        z-index: 9999;
+    }
+
+    .popup.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .popup.delete {
+        background: #dc3545 !important;
+    }
+</style>
+
+<!-- Scheme ADD POPUP -->
+<div id="schemeAddPopup" class="popup">
+    Scheme Added Successfully! 📝
+</div>
+
+<!-- Scheme DELETE POPUP -->
+<div id="schemeDeletePopup" class="popup delete">
+    Scheme Deleted Successfully! 🗑️
+</div>
+
+<style>
+    .popup {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #28a745;
+        color: #fff;
+        padding: 14px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+        z-index: 9999;
+    }
+
+    .popup.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .popup.delete {
+        background: #dc3545 !important;
+    }
+</style>
+
+<!-- IMAGE UPLOADED POPUP -->
+<div id="imageAddPopup" class="popup">
+    Image Uploaded Successfully! 🖼️
+</div>
+
+<!-- IMAGE DELETED POPUP -->
+<div id="imageDeletePopup" class="popup delete">
+    Image Deleted Successfully! 🗑️
+</div>
+
+<style>
+    .popup {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #28a745;
+        color: #fff;
+        padding: 14px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.4s ease;
+        z-index: 9999;
+    }
+
+    .popup.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .popup.delete {
+        background: #dc3545 !important;
+    }
+</style>
+
+
+
 <body>
     <header class="site-header">
         <div class="container">
@@ -129,6 +279,59 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        //member pop up
+        function showSuccessPopup() {
+            const popup = document.getElementById("successPopup");
+            popup.classList.add("show");
+            setTimeout(() => popup.classList.remove("show"), 2000);
+        }
+
+        function showDeletePopup() {
+            const popup = document.getElementById("deletePopup");
+            popup.classList.add("show");
+            setTimeout(() => popup.classList.remove("show"), 2000);
+        }
+
+        // Notice pop up
+        function showNoticeAddPopup() {
+            const p = document.getElementById("noticeAddPopup");
+            p.classList.add("show");
+            setTimeout(() => p.classList.remove("show"), 2000);
+        }
+
+        function showNoticeDeletePopup() {
+            const p = document.getElementById("noticeDeletePopup");
+            p.classList.add("show");
+            setTimeout(() => p.classList.remove("show"), 2000);
+        }
+
+        // Scheme pop up
+        function showSchemeAddPopup() {
+            const p = document.getElementById("schemeAddPopup");
+            p.classList.add("show");
+            setTimeout(() => p.classList.remove("show"), 2000);
+        }
+
+        function showSchemeDeletePopup() {
+            const p = document.getElementById("schemeDeletePopup");
+            p.classList.add("show");
+            setTimeout(() => p.classList.remove("show"), 2000);
+        }
+
+        // Image Pop Up
+        function showImageAddPopup() {
+            const p = document.getElementById("imageAddPopup");
+            p.classList.add("show");
+            setTimeout(() => p.classList.remove("show"), 2000);
+        }
+
+        function showImageDeletePopup() {
+            const p = document.getElementById("imageDeletePopup");
+            p.classList.add("show");
+            setTimeout(() => p.classList.remove("show"), 2000);
+        }
+
+
         if (localStorage.getItem("isAdminLoggedIn") !== "true") {
             window.location.href = "login.html";
         }
@@ -137,7 +340,7 @@
         const ADMIN_PASSWORD = "shiva";
 
         /* ------------------------------------------------
-           🔥 SHOW DOTS BASED ON LOCALSTORAGE
+            🔥 SHOW DOTS BASED ON LOCALSTORAGE
         --------------------------------------------------*/
         function showDots() {
             if (localStorage.getItem("newInfo") === "yes")
@@ -156,7 +359,7 @@
         showDots();
 
         /* ------------------------------------------------
-           🔥 WHEN ADMIN ADDS NEW DATA → SET FLAGS
+            🔥 WHEN ADMIN ADDS NEW DATA → SET FLAGS
         --------------------------------------------------*/
         socket.on("new-data", (data) => {
             if (data.type === "info") localStorage.setItem("newInfo", "yes");
@@ -168,7 +371,7 @@
         });
 
         /* ------------------------------------------------
-           🔥 WHEN USER OPENS DASHBOARD → MARK AS SEEN
+            🔥 WHEN USER OPENS DASHBOARD → MARK AS SEEN
         --------------------------------------------------*/
         window.addEventListener("load", () => {
             localStorage.setItem("newInfo", "no");
@@ -185,8 +388,8 @@
                 const infos = await infoRes.json();
                 infos.info.sort((a, b) => b.id - a.id);
 
-                document.getElementById('adminInfoList').innerHTML = infos.info.length
-                    ? infos.info.map(i => {
+                document.getElementById('adminInfoList').innerHTML = infos.info.length ?
+                    infos.info.map(i => {
                         let badgeClass = "badge-general";
                         if (i.type === "Important") badgeClass = "badge-important";
                         if (i.type === "Urgent") badgeClass = "badge-urgent";
@@ -198,41 +401,41 @@
             <p>${i.description || i.desc}</p>
             <button onclick="deleteInfo(${i.id})">Delete</button>
         </div>`;
-                    }).join('')
-                    : '<p>No notices yet</p>';
+                    }).join('') :
+                    '<p>No notices yet</p>';
 
                 const memRes = await fetch('/api/members');
                 const mems = await memRes.json();
-                document.getElementById('adminMembers').innerHTML = mems.members.length
-                    ? mems.members.map(m =>
+                document.getElementById('adminMembers').innerHTML = mems.members.length ?
+                    mems.members.map(m =>
                         `<div class="card">
                             <h3>${m.name}</h3>
                             <p>${m.role} - ${m.contact}</p>
                             <button onclick="deleteMember(${m.id})">Delete</button>
-                        </div>`).join('')
-                    : '<p>No members yet</p>';
+                        </div>`).join('') :
+                    '<p>No members yet</p>';
 
                 const schRes = await fetch('/api/schemes');
                 const schs = await schRes.json();
-                document.getElementById('adminSchemes').innerHTML = schs.schemes.length
-                    ? schs.schemes.map(s =>
+                document.getElementById('adminSchemes').innerHTML = schs.schemes.length ?
+                    schs.schemes.map(s =>
                         `<div class="card">
                             <h3>${s.title}</h3>
                             <p>${s.description}</p>
                             <p>${s.start} → ${s.end}</p>
                             <button onclick="deleteScheme(${s.id})">Delete</button>
-                        </div>`).join('')
-                    : '<p>No schemes yet</p>';
+                        </div>`).join('') :
+                    '<p>No schemes yet</p>';
 
                 const galRes = await fetch('/api/gallery');
                 const gal = await galRes.json();
-                document.getElementById('adminGallery').innerHTML = gal.images.length
-                    ? gal.images.map(img =>
+                document.getElementById('adminGallery').innerHTML = gal.images.length ?
+                    gal.images.map(img =>
                         `<div>
                             <img src="${img.url}" alt="${img.alt}" />
                             <button onclick="deleteImage(${img.id})">Delete</button>
-                        </div>`).join('')
-                    : '<p>No images yet</p>';
+                        </div>`).join('') :
+                    '<p>No images yet</p>';
             } catch (e) {
                 console.error("Error fetching data:", e);
             }
@@ -242,24 +445,33 @@
             if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
             await fetch(`/admin/delete/info/${id}`, { method: 'DELETE' });
             fetchData();
+            showNoticeDeletePopup();
         }
 
         async function deleteMember(id) {
             if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
-            await fetch(`/admin/delete/member/${id}`, { method: 'DELETE' });
+            await fetch(`/admin/delete/member/${id}`, {
+                method: 'DELETE'
+            });
             fetchData();
+            showDeletePopup();
+
         }
 
         async function deleteScheme(id) {
             if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
             await fetch(`/admin/delete/scheme/${id}`, { method: 'DELETE' });
             fetchData();
+            showSchemeDeletePopup();  // 🔥 popup
         }
 
         async function deleteImage(id) {
             if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
-            await fetch(`/admin/delete/image/${id}`, { method: 'DELETE' });
+            await fetch(`/admin/delete/image/${id}`, {
+                method: 'DELETE'
+            });
             fetchData();
+            showImageDeletePopup();   // 🔥 popup
         }
 
         document.getElementById('infoForm').addEventListener('submit', async e => {
@@ -277,26 +489,36 @@
                     type: document.querySelector("#infoType option:checked").value
                 })
             });
-
             e.target.reset();
             fetchData();
+            showNoticeAddPopup();   // 🔥 popup here
         });
 
         document.getElementById('memberForm').addEventListener('submit', async e => {
             e.preventDefault();
-            if (document.getElementById('memberPassword').value !== ADMIN_PASSWORD) return alert("Incorrect password");
+
+            if (document.getElementById('memberPassword').value !== ADMIN_PASSWORD)
+                return alert("Incorrect password");
+
             await fetch('/admin/members', {
                 method: 'POST',
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
                     name: document.getElementById('memberName').value.trim(),
                     role: document.getElementById('memberRole').value.trim(),
                     contact: document.getElementById('memberContact').value.trim()
                 })
             });
+
             e.target.reset();
             fetchData();
+
+            // 🔥 SHOW POPUP AFTER SUCCESS
+            showSuccessPopup();
         });
+
 
         document.getElementById('schemeForm').addEventListener('submit', async e => {
             e.preventDefault();
@@ -311,8 +533,10 @@
                     end: document.getElementById('schemeEnd').value
                 })
             });
+
             e.target.reset();
             fetchData();
+            showSchemeAddPopup();   // popup added
         });
 
         document.getElementById('imageForm').addEventListener('submit', async e => {
@@ -324,9 +548,13 @@
             const fd = new FormData();
             fd.append('image', file);
 
-            await fetch('/admin/gallery', { method: 'POST', body: fd });
+            await fetch('/admin/gallery', {
+                method: 'POST',
+                body: fd
+            });
             e.target.reset();
             fetchData();
+            showImageAddPopup();   // 🔥 Popup Added Here
         });
 
         socket.on('new-data', fetchData);
