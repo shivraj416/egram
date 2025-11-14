@@ -28,20 +28,25 @@ const PUBLIC_PATH = path.join(ROOT_DIR, "public");
 const DATA_FILE = path.join(ROOT_DIR, "data.json");
 
 // ----------------------------------------------------------
-// MIDDLEWARE  (⭐ FIX ADDED BELOW)
+// MIDDLEWARE
 // ----------------------------------------------------------
 app.use(cors());
 app.use(express.json());
-
-// ⭐⭐ FIX ADDED → THIS MAKES req.body.type WORK ⭐⭐
 app.use(express.urlencoded({ extended: true }));
-
 app.use(express.static(PUBLIC_PATH));
 
 // ----------------------------------------------------------
 // STATIC PAGE ROUTES
 // ----------------------------------------------------------
-const pages = ["index", "about", "contact", "dashboard", "gallery", "members", "schemes"];
+const pages = [
+    "index",
+    "about",
+    "contact",
+    "dashboard",
+    "gallery",
+    "members",
+    "schemes",
+];
 
 pages.forEach((page) => {
     app.get(`/${page === "index" ? "" : page}`, (req, res) => {
@@ -54,7 +59,7 @@ pages.forEach((page) => {
 // ----------------------------------------------------------
 function loadData() {
     if (!fs.existsSync(DATA_FILE)) {
-        return { info: [], members: [], schemes: [], images: [] };
+        return { info: [], members: [], schemes: [], images: [], contact: [] };
     }
     return JSON.parse(fs.readFileSync(DATA_FILE));
 }
@@ -64,18 +69,17 @@ function saveData(data) {
 }
 
 // ----------------------------------------------------------
-// INFO ROUTES (WITH TYPE SUPPORT)
+// INFO ROUTES
 // ----------------------------------------------------------
 app.get("/api/info", (req, res) => {
     res.json({ info: loadData().info });
 });
 
 app.post("/admin/upload", (req, res) => {
-
     const { title, description, type } = req.body;
 
     if (!title || !description) {
-        return res.status(400).json({ status: "error", message: "Missing title/description" });
+        return res.status(400).json({ status: "error", message: "Missing fields" });
     }
 
     const data = loadData();
@@ -84,7 +88,7 @@ app.post("/admin/upload", (req, res) => {
         id: Date.now(),
         title,
         description,
-        type: type || "General"
+        type: type || "General",
     };
 
     data.info.push(newInfo);
@@ -176,13 +180,17 @@ app.get("/api/gallery", (req, res) => {
 
 app.post("/admin/gallery", upload.single("image"), (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ status: "error", message: "No file uploaded" });
+        return res
+            .status(400)
+            .json({ status: "error", message: "No file uploaded" });
     }
 
     const data = loadData();
     const newImg = {
         id: Date.now(),
-        url: `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        url: `data:${req.file.mimetype};base64,${req.file.buffer.toString(
+            "base64"
+        )}`,
         alt: "Uploaded Image",
     };
 
@@ -200,6 +208,82 @@ app.delete("/admin/delete/image/:id", (req, res) => {
 
     io.emit("new-data", { type: "gallery" });
     res.json({ status: "success" });
+});
+
+// ----------------------------------------------------------
+// CONTACT MESSAGE ROUTE
+// ----------------------------------------------------------
+app.post("/api/send-message", (req, res) => {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+        return res.json({ success: false, message: "Missing fields" });
+    }
+
+    const data = loadData();
+
+    if (!data.contact) data.contact = [];
+
+    const newMsg = {
+        id: Date.now(),
+        name,
+        email,
+        message,
+    };
+
+    data.contact.push(newMsg);
+    saveData(data);
+
+    io.emit("new-data", { type: "contact", message: newMsg });
+
+    res.json({ success: true });
+});
+
+// ----------------------------------------------------------
+// SEND EMAIL TO USER
+// ----------------------------------------------------------
+const nodemailer = require("nodemailer");
+
+app.post("/admin/send-email", async (req, res) => {
+    const { email, message, name } = req.body;
+
+    if (!email || !message || !name) {
+        return res.json({ success: false, error: "Missing fields" });
+    }
+
+    try {
+        let transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: "desaishivraj84@gmail.com",
+                pass: "mhhbkipooyxlkkln", // your app password
+            },
+        });
+
+        const finalMessage = `
+⭐ ग्राम पंचायत हरळ  
+नमस्कार, हा ईमेल ग्रामपंचायतीतर्फे पाठविण्यात आला आहे.
+
+📌 प्राप्तकर्ता: ${name}
+
+------------------------------
+${message}
+------------------------------
+        `;
+
+        await transporter.sendMail({
+            from: `"Gram Panchayat Haral" <desaishivraj84@gmail.com>`,
+            to: email,
+            subject: "Gram Panchayat Haral – सूचना",
+            text: finalMessage,
+        });
+
+        res.json({ success: true });
+
+    } catch (err) {
+        console.error("Email error:", err);
+        res.json({ success: false, error: err.message });
+    }
 });
 
 // ----------------------------------------------------------

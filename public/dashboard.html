@@ -167,8 +167,6 @@
     }
 </style>
 
-
-
 <body>
     <header class="site-header">
         <div class="container">
@@ -273,12 +271,49 @@
         <div id="adminGallery" class="gallery-grid"></div>
     </main>
 
+    <section class="card">
+        <h2>Send Email to User</h2>
+        <form id="emailForm">
+            <input type="text" id="emailName" placeholder="User Name" required>
+            <input type="email" id="emailAddress" placeholder="User Email" required>
+            <textarea id="emailMessage" placeholder="Enter message..." required></textarea>
+            <button type="submit">Send Email</button>
+        </form>
+    </section>
+
     <footer class="site-footer">
         <div class="container"><small>✅ © ग्रामपंचायत हरळ</small></div>
     </footer>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // sending emails
+        document.getElementById("emailForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const data = {
+                name: document.getElementById("emailName").value.trim(),
+                email: document.getElementById("emailAddress").value.trim(),
+                message: document.getElementById("emailMessage").value.trim()
+            };
+
+            const res = await fetch("/admin/send-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                alert("📩 Email sent successfully!");
+                e.target.reset();
+            } else {
+                alert("❌ Failed: " + result.error);
+            }
+        });
+
+
         //member pop up
         function showSuccessPopup() {
             const popup = document.getElementById("successPopup");

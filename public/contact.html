@@ -33,12 +33,15 @@
             <label>Name
                 <input type="text" name="name" required>
             </label>
+
             <label>Email
                 <input type="email" name="email" required>
             </label>
+
             <label>Message
                 <textarea name="message" required></textarea>
             </label>
+
             <button type="submit">Send</button>
         </form>
     </main>
@@ -51,29 +54,51 @@
 
     <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
+
+    <!-- 🌟 Only ONE socket instance -->
     <script>
         const socket = io();
 
-        // Listen for updates from the server (e.g., office info updated by admin)
         socket.on('new-data', (data) => {
-            console.log('New contact data received:', data);
-            // Fetch latest contact info from server
-            fetch('/api/contact') // You need to create this endpoint in your Node.js backend
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('contactInfo').textContent = data.content;
-                })
-                .catch(err => console.error(err));
-        });
-
-        // Contact form handler
-        document.getElementById('contactForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            alert('Thank you! This demo site does not send messages — connect a backend to make it live.');
-            this.reset();
+            if (data.type === "contact") {
+                console.log("New contact update received");
+            }
         });
     </script>
 
+    <!-- ⭐ CONTACT FORM BACKEND INTEGRATION -->
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const res = await fetch('/api/send-message', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: this.name.value,
+                    email: this.email.value,
+                    message: this.message.value
+                })
+            });
+
+            if (!res.ok) {
+                alert("❌ Server not responding (404). Backend route missing.");
+                return;
+            }
+
+            const data = await res.json();
+
+            if (data.success) {
+                alert(" Server is busy!!");
+                this.reset();
+            } else {
+                alert("❌ Failed to send message.");
+            }
+        });
+
+    </script>
+
+    <!-- REMOVE SECOND SOCKET FROM script.js -->
     <script src="assets/js/script.js"></script>
 </body>
 
