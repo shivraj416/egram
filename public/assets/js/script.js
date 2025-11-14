@@ -60,43 +60,54 @@ function renderGallery() {
         </div>`).join("");
 } 
 
-// ---------------- MEMBERS SECTION ----------------
-function loadMembers() {
-    const raw = localStorage.getItem(KEY_MEMBERS);
-    return raw ? JSON.parse(raw) : [];
-}
-function saveMembers(members) {
-    localStorage.setItem(KEY_MEMBERS, JSON.stringify(members));
-}
-function renderMembers() {
-    const list = document.getElementById("memberList");
-    if (!list) return;
-    const members = loadMembers().sort((a, b) => b.addedAt - a.addedAt);
-    list.innerHTML = members.map(m => `
-        <div class="card">
-            <h3>${escapeHtml(m.name)}</h3>
-            <p><strong>Role:</strong> ${escapeHtml(m.role)}</p>
-            <p><strong>Contact:</strong> ${escapeHtml(m.contact)}</p>
-        </div>`).join("");
-}
-function renderAdminMembers() {
-    const adminList = document.getElementById("adminMembers");
-    if (!adminList) return;
-    const members = loadMembers().sort((a, b) => b.addedAt - a.addedAt);
-    adminList.innerHTML = members.map(m => `
-        <div class="card">
-            <h3>${escapeHtml(m.name)}</h3>
-            <p>${escapeHtml(m.role)} - ${escapeHtml(m.contact)}</p>
-            <small>${new Date(m.addedAt).toLocaleString()}</small>
-            <div><button onclick="deleteMember(${m.id})">Delete</button></div>
-        </div>`).join("");
+// ---------------- MEMBERS SECTION (BACKEND VERSION) ----------------
+async function fetchMembers() {
+    const res = await fetch("/api/members");
+    const data = await res.json();
+    return data.members || [];
 }
 
-window.deleteMember = function (id) {
-    const pwd = prompt("Enter admin password to delete member:");
+async function renderMembers() {
+    const list = document.getElementById("memberList");
+    if (!list) return;
+
+    const members = await fetchMembers();
+
+    if (!members.length) {
+        list.innerHTML = "<p>सदस्यांची नोंद उपलब्ध नाही</p>";
+        return;
+    }
+
+    list.innerHTML = members.map(m => `
+        <div class="card">
+            <h3>👤 ${m.name}</h3>
+            <p><strong>भूमिका:</strong> ${m.role}</p>
+            <p><strong>संपर्क:</strong> ${m.contact}</p>
+        </div>
+    `).join("");
+}
+
+async function renderAdminMembers() {
+    const adminList = document.getElementById("adminMembers");
+    if (!adminList) return;
+
+    const members = await fetchMembers();
+
+    adminList.innerHTML = members.map(m => `
+        <div class="card">
+            <h3>${m.name}</h3>
+            <p>${m.role} - ${m.contact}</p>
+            <button onclick="deleteMember(${m.id})">Delete</button>
+        </div>
+    `).join("");
+}
+
+window.deleteMember = async function(id) {
+    const pwd = prompt("Admin Password:");
     if (pwd !== ADMIN_PASSWORD) return alert("Incorrect password");
-    const members = loadMembers().filter(m => m.id !== id);
-    saveMembers(members);
+
+    await fetch(`/admin/delete/member/${id}`, { method: "DELETE" });
+
     renderAdminMembers();
     renderMembers();
 };
@@ -104,23 +115,29 @@ window.deleteMember = function (id) {
 function initMemberForm() {
     const form = document.getElementById("memberForm");
     if (!form) return;
-    form.addEventListener("submit", e => {
-        e.preventDefault();
-        const name = document.getElementById("memberName").value.trim();
-        const role = document.getElementById("memberRole").value.trim();
-        const contact = document.getElementById("memberContact").value.trim();
-        const pwd = document.getElementById("memberPassword").value.trim();
-        if (pwd !== ADMIN_PASSWORD) return alert("Incorrect password");
 
-        const members = loadMembers();
-        members.push({ id: uid(), name, role, contact, addedAt: Date.now() });
-        saveMembers(members);
+    form.addEventListener("submit", async e => {
+        e.preventDefault();
+
+        if (document.getElementById("memberPassword").value !== ADMIN_PASSWORD)
+            return alert("Incorrect password");
+
+        await fetch("/admin/members", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: document.getElementById("memberName").value.trim(),
+                role: document.getElementById("memberRole").value.trim(),
+                contact: document.getElementById("memberContact").value.trim()
+            })
+        });
+
         form.reset();
-        renderAdminMembers();
         renderMembers();
-        socket.emit('update-data'); // Notify server of new member
+        renderAdminMembers();
     });
 }
+
 
 // ---------------- SCHEMES SECTION ----------------
 function loadSchemes() {

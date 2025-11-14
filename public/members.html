@@ -44,10 +44,8 @@
     <main class="container">
         <h1>ग्रामपंचायत सदस्य</h1>
 
-        <!-- 🔍 SEARCH BAR -->
         <input type="text" id="memberSearch" class="search-box" placeholder="सदस्य शोधा..." />
 
-        <!-- SCROLL BOX -->
         <div class="member-scroll-box">
             <div id="memberList" class="cards"></div>
         </div>
@@ -55,11 +53,10 @@
 
     <footer class="site-footer">
         <div class="container">
-            <small>✅ © ग्रामपंचायत हरळ</small>
+            <small>© ग्रामपंचायत हरळ</small>
         </div>
     </footer>
 
-    <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -70,56 +67,58 @@
         let allMembers = [];
 
         /* ------------------------------------------------
-            🔥 SHOW DOT IF NEW MEMBER ADDED
+           FIXED: SHOW DOT USING newMembers (not newMember)
         --------------------------------------------------*/
         function showMembersDot() {
-            if (localStorage.getItem("newMember") === "yes") {
+            if (localStorage.getItem("newMembers") === "yes") {
                 dotMembers.style.display = "inline-block";
             }
         }
         showMembersDot();
 
         /* ------------------------------------------------
-            🔥 WHEN ADMIN ADDS NEW MEMBER → SET DOT FLAG
+           FIXED: USE type === "members"
         --------------------------------------------------*/
         socket.on("new-data", (data) => {
             if (data.type === "members") {
-                localStorage.setItem("newMember", "yes");
+                localStorage.setItem("newMembers", "yes");
                 showMembersDot();
+                fetchMembers();   // reload list
             }
         });
 
         /* ------------------------------------------------
-            🔥 WHEN USER OPENS MEMBERS PAGE → REMOVE DOT
+           Remove dot when user opens page
         --------------------------------------------------*/
         window.addEventListener("load", () => {
-            localStorage.setItem("newMember", "no");
+            localStorage.setItem("newMembers", "no");
             dotMembers.style.display = "none";
         });
 
-
-        // Render members
+        /* ------------------------------------------------
+           Render members
+        --------------------------------------------------*/
         function renderMembers(members) {
             memberListEl.innerHTML = "";
-            if (!Array.isArray(members) || members.length === 0) {
+            if (!members.length) {
                 memberListEl.innerHTML = "<p>सदस्यांची नोंद उपलब्ध नाही</p>";
                 return;
             }
 
-            members.forEach((member) => {
-                const card = document.createElement("div");
-                card.className = "card member-card";
-                card.innerHTML = `
-                    <h3 class="member-name">👤 ${member.name}</h3>
-                    <p><strong>भूमिका:</strong> ${member.role || "—"}</p>
-                    <p><strong>संपर्क:</strong> ${member.contact || "—"}</p>
+            members.forEach((m) => {
+                memberListEl.innerHTML += `
+                    <div class="card member-card">
+                        <h3>👤 ${m.name}</h3>
+                        <p><b>भूमिका:</b> ${m.role}</p>
+                        <p><b>संपर्क:</b> ${m.contact}</p>
+                    </div>
                 `;
-
-                memberListEl.appendChild(card);
             });
         }
 
-        // Fetch members
+        /* ------------------------------------------------
+           Fetch members
+        --------------------------------------------------*/
         async function fetchMembers() {
             try {
                 const res = await fetch("/api/members");
@@ -127,30 +126,27 @@
                 allMembers = data.members;
                 renderMembers(allMembers);
             } catch (err) {
-                console.error("Error fetching members:", err);
+                console.error("Members loading error:", err);
             }
         }
 
-        // Search filter
+        fetchMembers();
+
+        /* ------------------------------------------------
+           Search filter
+        --------------------------------------------------*/
         searchInput.addEventListener("keyup", () => {
             const q = searchInput.value.toLowerCase();
             const filtered = allMembers.filter(
-                (m) =>
+                m =>
                     m.name.toLowerCase().includes(q) ||
-                    (m.role || "").toLowerCase().includes(q) ||
-                    (m.contact || "").toLowerCase().includes(q)
+                    m.role.toLowerCase().includes(q) ||
+                    m.contact.toLowerCase().includes(q)
             );
             renderMembers(filtered);
         });
-
-        // Live updates
-        socket.on("new-data", fetchMembers);
-
-        // Initial load
-        fetchMembers();
     </script>
 
     <script src="assets/js/script.js"></script>
 </body>
-
 </html>
