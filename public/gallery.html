@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="assets/css/style.css">
 
     <style>
-        /* 🔥 Small orange dot */
         .new-dot {
             width: 10px;
             height: 10px;
@@ -16,6 +15,50 @@
             border-radius: 50%;
             display: inline-block;
             margin-left: 4px;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 45px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ⭐ IMPORTANT FIX – MAKE IMAGES CLICKABLE */
+        #gallery img {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            z-index: 10;
         }
     </style>
 </head>
@@ -49,32 +92,31 @@
     <main class="container">
         <h1>Gallery</h1>
         <p>Images uploaded by admin appear below.</p>
+
         <div class="gallery-scroll-box">
             <div id="gallery" class="gallery-grid"></div>
         </div>
-
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <small>✅ © ग्रामपंचायत हरळ</small>
+            <small>© ग्रामपंचायत हरळ</small>
         </div>
     </footer>
 
     <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
+
     <script>
         const socket = io();
-        const galleryEl = document.getElementById('gallery');
-        const dotGallery = document.getElementById('dotGallery');
+        const galleryEl = document.getElementById("gallery");
+        const dotGallery = document.getElementById("dotGallery");
 
-        /* ------------------------------------------------
-           🔥 IF NEW IMAGE ADDED → SHOW DOT
-        --------------------------------------------------*/
         socket.on("new-data", (data) => {
             if (data.type === "gallery") {
                 localStorage.setItem("newGallery", "yes");
                 showGalleryDot();
+                loadGallery();
             }
         });
 
@@ -84,46 +126,51 @@
             }
         }
 
-        /* ------------------------------------------------
-           🔥 USER OPENED GALLERY → REMOVE DOT
-        --------------------------------------------------*/
         window.addEventListener("load", () => {
             localStorage.setItem("newGallery", "no");
             dotGallery.style.display = "none";
         });
 
-        // Function to render images
-        function renderGallery(images) {
-            galleryEl.innerHTML = '';
-            images.forEach(img => {
-                const imgEl = document.createElement('img');
-                imgEl.src = img.url;
+        // FETCH IMAGES
+        async function loadGallery() {
+            try {
+                const res = await fetch("/api/gallery");
+                const data = await res.json();
+                const images = data.images;
 
-                // CLICK → SHOW BIG IMAGE
-                imgEl.addEventListener('click', () => {
-                    document.getElementById("lightboxImg").src = img.url;
-                    document.getElementById("lightbox").style.display = "flex";
+                galleryEl.innerHTML = "";
+
+                if (!images.length) {
+                    galleryEl.innerHTML = `<p>No images uploaded yet</p>`;
+                    return;
+                }
+
+                images.forEach(img => {
+                    const imgEl = document.createElement("img");
+                    imgEl.src = img.url;
+                    imgEl.alt = img.alt || "Gallery Image";
+
+                    imgEl.onclick = () => {
+                        document.getElementById("lightboxImg").src = img.url;
+                        document.getElementById("lightbox").style.display = "flex";
+                    };
+
+                    galleryEl.appendChild(imgEl);
                 });
 
-                imgEl.alt = img.alt || 'Gallery Image';
-                galleryEl.appendChild(imgEl);
-            });
+            } catch (error) {
+                console.error("Error loading gallery:", error);
+            }
         }
 
-        // Fetch initial images
-        fetch('/api/gallery')
-            .then(res => res.json())
-            .then(data => renderGallery(data.images))
-            .catch(err => console.error(err));
+        loadGallery();
 
-        /* -------------------------------
-            LIGHTBOX CLOSE BUTTON
-        --------------------------------*/
-        document.getElementById("closeLightbox").addEventListener('click', () => {
+        // CLOSE LIGHTBOX
+        document.getElementById("closeLightbox").addEventListener("click", () => {
             document.getElementById("lightbox").style.display = "none";
         });
 
-        document.getElementById("lightbox").addEventListener('click', (e) => {
+        document.getElementById("lightbox").addEventListener("click", (e) => {
             if (e.target === e.currentTarget) {
                 document.getElementById("lightbox").style.display = "none";
             }

@@ -96,38 +96,41 @@ body {
     background: var(--card);
     padding: var(--pad);
     border-radius: 8px;
-    flex: 1 1 220px; /* ensures cards resize properly */
+    flex: 1 1 220px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .gallery-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;                  
+    gap: 12px;
     justify-content: flex-start;
 }
 
 .gallery-grid img {
-    width: 110px;              /* ID width */
-    height: 150px;             /* ID  height */
+    width: 110px;
+    height: 150px;
     object-fit: cover;
     border-radius: 6px;
     border: 1px solid #ccc;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    z-index: 999 !important;
+    position: relative !important;
 }
 
-/* LIGHTBOX POPUP */
+/* LIGHTBOX FIXED */
 .lightbox {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: flex;
+    background: rgba(0,0,0,0.85);
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    display: none;
+    z-index: 99999 !important;
 }
 
 .lightbox img {
@@ -147,18 +150,18 @@ body {
     position: fixed;
     top: 20px;
     right: 25px;
-    font-size: 35px;
+    font-size: 45px;
     color: #fff;
     cursor: pointer;
     font-weight: bold;
-    z-index: 2000;
+    z-index: 20000;
 }
 
 /* GALLERY SCROLL BOX */
 .gallery-scroll-box {
-    max-height: 500px;      
-    overflow-y: auto;       
-    padding-right: 5px;     
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 /* Forms */
@@ -195,135 +198,12 @@ button:hover {
 
 /* MEMBER LIST SCROLL BOX */
 .member-scroll-box {
-    max-height: 500px;       /* vertical scroll height */
-    overflow-y: auto;        /* vertical scrollbar */
+    max-height: 500px;
+    overflow-y: auto;
     padding-right: 5px;
 }
 
-/* PERFECT MEMBER CARD SIZE */
-.member-card {
-    min-width: 220px;
-    min-height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-/* SCHEMES PAGE SCROLL BOX */
-.scheme-scroll-box {
-    max-height: 500px;       /* vertical scroll height */
-    overflow-y: auto;        /* vertical scrolling */
-    padding-right: 5px;
-}
-
-/* PERFECT FIXED CARD SIZE FOR SCHEMES */
-.scheme-card {
-    min-width: 220px;
-    min-height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-/* NOTICE LIST SCROLL BOX */
-.info-scroll-box {
-    max-height: 400px;       /* scrolling height */
-    overflow-y: auto;        /* vertical scroll bar */
-    padding-right: 5px;
-}
-
-/* Perfect fixed card size for notices */
-.info-card {
-    min-width: 220px;
-    min-height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-/* SEARCH BOX */
-.search-box {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-/* NOTICE BADGES */
-.notice-tag {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-
-.tag-important {
-    background: #d9534f;  /* red */
-    color: white;
-}
-
-.tag-urgent {
-    background: #f0ad4e;  /* yellow */
-    color: black;
-}
-
-.tag-general {
-    background: #0275d8;  /* blue */
-    color: white;
-}
-
-/* ADMIN BADGES */
-.admin-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-
-.badge-important { background: #d9534f; color: white; }
-.badge-urgent { background: #f0ad4e; color: black; }
-.badge-general { background: #0275d8; color: white; }
-
-
-.member-card {
-    padding: 15px;
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-}
-
-.member-card h3.member-name {
-    margin-bottom: 8px;
-    font-size: 20px;
-    color: #1a73e8;
-}
-
-.member-card p {
-    margin: 4px 0;
-    font-size: 15px;
-}
-
-.dot {
-    width: 10px;
-    height: 10px;
-    background: orange;
-    border-radius: 50%;
-    display: inline-block;
-    margin-left: 6px;
-}
-.hidden-dot {
-    display: none;
-}
-
-
-
-/* Footer */
+/* FOOTER */
 .site-footer {
     padding: 20px 0;
     text-align: center;
@@ -352,9 +232,5 @@ button:hover {
 
     .nav.show {
         display: flex;
-    }
-
-    .hero {
-        text-align: left;
     }
 }

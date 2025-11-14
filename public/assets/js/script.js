@@ -40,25 +40,48 @@ function renderInfoList() {
 }
 
 // ---------------- GALLERY SECTION ----------------
-function loadImages() {
-    const raw = localStorage.getItem(KEY_IMAGES);
-    return raw ? JSON.parse(raw) : [];
+// ---------------- GALLERY SECTION (BACKEND VERSION) ----------------
+
+// Fetch images from backend
+async function fetchGallery() {
+    const res = await fetch("/api/gallery");
+    const data = await res.json();
+    return data.images || [];
 }
-function saveImages(imgs) {
-    localStorage.setItem(KEY_IMAGES, JSON.stringify(imgs));
-}
-function renderGallery() {
+
+// Render gallery (user page)
+async function renderGallery() {
     const gallery = document.getElementById("gallery");
     if (!gallery) return;
-    const imgs = loadImages().sort((a, b) => b.uploadedAt - a.uploadedAt);
-    gallery.innerHTML = imgs.map(img => `
-        <div>
-            <img src="${img.dataUrl}" alt="uploaded image"/>
-            <div style="display:flex; gap:8px; margin-top:6px;">
-                <button onclick="deleteImage(${img.id})">Delete (admin)</button>
-            </div>
-        </div>`).join("");
-} 
+
+    const images = await fetchGallery();
+
+    if (!images.length) {
+        gallery.innerHTML = "<p>No images uploaded yet</p>";
+        return;
+    }
+
+    gallery.innerHTML = "";
+
+    images.forEach(img => {
+        const wrapper = document.createElement("div");
+        const el = document.createElement("img");
+
+        el.src = img.url;
+        el.alt = img.alt || "Gallery Image";
+        el.style.cursor = "pointer";
+
+        // ⭐ FIX: Lightbox click event
+        el.addEventListener("click", () => {
+            document.getElementById("lightboxImg").src = img.url;
+            document.getElementById("lightbox").style.display = "flex";
+        });
+
+        wrapper.appendChild(el);
+        gallery.appendChild(wrapper);
+    });
+}
+
 
 // ---------------- MEMBERS SECTION (BACKEND VERSION) ----------------
 async function fetchMembers() {
@@ -102,7 +125,7 @@ async function renderAdminMembers() {
     `).join("");
 }
 
-window.deleteMember = async function(id) {
+window.deleteMember = async function (id) {
     const pwd = prompt("Admin Password:");
     if (pwd !== ADMIN_PASSWORD) return alert("Incorrect password");
 
