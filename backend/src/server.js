@@ -253,14 +253,14 @@ app.post("/admin/send-email", async (req, res) => {
     }
 
     try {
-        // ⭐ FIX: Brevo SMTP (Works 100% on Render)
+        // ⭐ BREVO SMTP CONFIG
         let transporter = nodemailer.createTransport({
             host: "smtp-relay.brevo.com",
             port: 587,
             secure: false,
             auth: {
-                user: "apikey",
-                pass: process.env.BREVO_API_KEY
+                user: process.env.BREVO_SMTP_USER,
+                pass: process.env.BREVO_SMTP_PASS
             }
         });
 
@@ -276,11 +276,12 @@ ${message}
         `;
 
         await transporter.sendMail({
-            from: `"Gram Panchayat Haral" <no-reply@gpharal.in>`,
+            from: `"ShivTech" <desaishivraj84@gmail.com>`,
             to: email,
             subject: "Gram Panchayat Haral – सूचना",
             text: finalMessage,
         });
+
 
         res.json({ success: true });
 
