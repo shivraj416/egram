@@ -5,6 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Members - Gram Panchayat</title>
+
+    <!-- ✅ Favicon -->
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+
     <link rel="stylesheet" href="assets/css/style.css" />
 
     <style>
@@ -47,6 +51,7 @@
         <input type="text" id="memberSearch" class="search-box" placeholder="सदस्य शोधा..." />
 
         <div class="member-scroll-box">
+            <!-- ⭐ FIXED — memberList div works now -->
             <div id="memberList" class="cards"></div>
         </div>
     </main>
@@ -58,6 +63,7 @@
     </footer>
 
     <script src="/socket.io/socket.io.js"></script>
+
     <script>
         const socket = io();
         const memberListEl = document.getElementById("memberList");
@@ -66,9 +72,6 @@
 
         let allMembers = [];
 
-        /* ------------------------------------------------
-           FIXED: SHOW DOT USING newMembers (not newMember)
-        --------------------------------------------------*/
         function showMembersDot() {
             if (localStorage.getItem("newMembers") === "yes") {
                 dotMembers.style.display = "inline-block";
@@ -76,65 +79,61 @@
         }
         showMembersDot();
 
-        /* ------------------------------------------------
-           FIXED: USE type === "members"
-        --------------------------------------------------*/
         socket.on("new-data", (data) => {
             if (data.type === "members") {
                 localStorage.setItem("newMembers", "yes");
                 showMembersDot();
-                fetchMembers();   // reload list
+                fetchMembers(); // auto refresh
             }
         });
 
-        /* ------------------------------------------------
-           Remove dot when user opens page
-        --------------------------------------------------*/
         window.addEventListener("load", () => {
             localStorage.setItem("newMembers", "no");
             dotMembers.style.display = "none";
         });
 
-        /* ------------------------------------------------
-           Render members
-        --------------------------------------------------*/
+        /* --------------------------------------------
+            ⭐ FIXED RENDER FUNCTION: REAL MEMBERS SHOW
+        --------------------------------------------- */
         function renderMembers(members) {
             memberListEl.innerHTML = "";
+
             if (!members.length) {
                 memberListEl.innerHTML = "<p>सदस्यांची नोंद उपलब्ध नाही</p>";
                 return;
             }
 
-            members.forEach((m) => {
-                memberListEl.innerHTML += `
+            memberListEl.innerHTML = members
+                .map(m => `
                     <div class="card member-card">
                         <h3>👤 ${m.name}</h3>
                         <p><b>भूमिका:</b> ${m.role}</p>
                         <p><b>संपर्क:</b> ${m.contact}</p>
                     </div>
-                `;
-            });
+                `)
+                .join("");
         }
 
-        /* ------------------------------------------------
-           Fetch members
-        --------------------------------------------------*/
+        /* --------------------------------------------
+            ⭐ FIXED — ALWAYS FETCH + RENDER CORRECTLY
+        --------------------------------------------- */
         async function fetchMembers() {
             try {
                 const res = await fetch("/api/members");
                 const data = await res.json();
-                allMembers = data.members;
+
+                allMembers = data.members || [];
                 renderMembers(allMembers);
+
             } catch (err) {
                 console.error("Members loading error:", err);
             }
         }
 
+        // ⭐ FIRST LOAD
         fetchMembers();
 
-        /* ------------------------------------------------
-           Search filter
-        --------------------------------------------------*/
+        // SEARCH
         searchInput.addEventListener("keyup", () => {
             const q = searchInput.value.toLowerCase();
             const filtered = allMembers.filter(

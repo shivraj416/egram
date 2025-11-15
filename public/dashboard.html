@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Dashboard - Admin</title>
+    <!-- ✅ Favicon added -->
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+
     <link rel="stylesheet" href="assets/css/style.css">
 
     <style>
@@ -418,21 +421,21 @@
         /* ---------------- ORIGINAL CODE BELOW (UNCHANGED) ---------------- */
 
         async function fetchData() {
-        try {
-            const infoRes = await fetch('/api/info');
-            const infos = await infoRes.json();
-            infos.info.sort((a, b) => b.id - a.id);
+            try {
+                const infoRes = await fetch('/api/info');
+                const infos = await infoRes.json();
+                infos.info.sort((a, b) => b.id - a.id);
 
-            /* ------------------ FIXED NOTICE RENDER (AUTO COLORS) ------------------ */
-            document.getElementById('adminInfoList').innerHTML = infos.info.length ?
-                infos.info.map(i => {
+                /* ------------------ FIXED NOTICE RENDER (AUTO COLORS) ------------------ */
+                document.getElementById('adminInfoList').innerHTML = infos.info.length ?
+                    infos.info.map(i => {
 
-                    // ⭐ Auto color based on type
-                    let badgeClass = "badge-general";   // blue
-                    if (i.type === "Important") badgeClass = "badge-important";  // red
-                    if (i.type === "Urgent") badgeClass = "badge-urgent";        // orange
+                        // ⭐ Auto color based on type
+                        let badgeClass = "badge-general";   // blue
+                        if (i.type === "Important") badgeClass = "badge-important";  // red
+                        if (i.type === "Urgent") badgeClass = "badge-urgent";        // orange
 
-                    return `
+                        return `
                         <div class="card">
                             <span class="admin-badge ${badgeClass}">
                                 ${i.type || "General"}
@@ -444,9 +447,9 @@
                             <button onclick="deleteInfo(${i.id})">Delete</button>
                         </div>
                     `;
-                }).join('')
-                :
-                `<p>No notices yet</p>`;
+                    }).join('')
+                    :
+                    `<p>No notices yet</p>`;
 
 
                 const schRes = await fetch('/api/schemes');
@@ -484,13 +487,15 @@
 
         async function deleteMember(id) {
             if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
-            await fetch(`/admin/delete/member/${id}`, {
-                method: 'DELETE'
-            });
-            fetchData();
-            showDeletePopup();
 
+            await fetch(`/admin/delete/member/${id}`, { method: "DELETE" });
+
+            fetchAdminMembers();  // ⭐ refresh list
+            fetchData();
+
+            showDeletePopup();
         }
+
 
         async function deleteScheme(id) {
             if (prompt("Admin Password:") !== ADMIN_PASSWORD) return alert("Incorrect");
@@ -593,7 +598,43 @@
 
         socket.on('new-data', fetchData);
 
-        document.addEventListener("DOMContentLoaded", fetchData);
+          /* ------------------------------------------------
+           ⭐ ADDED BY YOUR REQUEST
+        --------------------------------------------------*/
+        async function fetchAdminMembers() {
+            try {
+                const res = await fetch("/api/members");
+                const data = await res.json();
+                const adminBox = document.getElementById("adminMembers");
+
+                if (!adminBox) return;
+
+                if (!data.members.length) {
+                    adminBox.innerHTML = "<p>No members found</p>";
+                    return;
+                }
+
+                adminBox.innerHTML = data.members.map(m => `
+                    <div class="card">
+                        <h3>${m.name}</h3>
+                        <p><b>Role:</b> ${m.role}</p>
+                        <p><b>Contact:</b> ${m.contact}</p>
+                        <button onclick="deleteMember(${m.id})">Delete</button>
+                    </div>
+                `).join("");
+
+            } catch (err) {
+                console.error("Admin member load error:", err);
+            }
+        }
+
+        /* ------------------------------------------------
+           ⭐ FIX: Load Members Correctly on Dashboard
+        --------------------------------------------------*/
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchData();
+            fetchAdminMembers();
+        });
     </script>
 </body>
 
